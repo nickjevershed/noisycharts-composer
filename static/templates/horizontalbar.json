@@ -1,0 +1,47 @@
+{
+	"sheets": {
+		"data": [],
+		"calcs": [],
+		"template": [{
+			"title": "This is a headline",
+            "subtitle": "This is a subtitle",
+			"footnote" : "",
+			"source": "",
+			"interval":"",
+			"dateFormat": "%Y-%m-%d",
+			"timeInterval": "",
+			"dateParse" : "",
+			"xAxisLabel": "",
+			"yAxisLabel": "",
+			"xAxisFormat": "",
+			"tooltip": "",
+			"baseline": "",
+			"periodDateFormat": "",
+			"xAxisDateFormat": "",
+			"margin-left": "35",
+			"margin-top": "20",
+			"margin-bottom": "20",
+			"margin-right": "20",
+			"x_axis_cross_y" : "",
+            "xMin":"",
+            "yMin":"",
+            "barLabelsAbove":"TRUE",
+			"xColumn" : "",
+			"yColumn" : ""
+		}],
+		"trendline": [],
+		"options": [{
+            "enableShowMore": "FALSE",
+            "aria": "",
+            "colorScheme": "",
+            "baseline" : "",
+			"invertY": ""
+		}],
+		"chartId": [{
+			"type": "stackedbar"
+		}],
+		"labels": [],
+		"userkey": [],
+		"dropdown": []
+	}
+}

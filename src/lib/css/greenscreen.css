@@ -1,0 +1,15 @@
+.greenscreen {
+    background-color: #17FF00;
+}
+
+.greenscreen #positionCounter {
+    background-color: #17FF00;
+}
+
+.greenscreen #furniture, .greenscreen .sourceText {
+    opacity: 0;
+  }
+
+.greenscreen .y, .greenscreen .x {
+display: none;
+}  

@@ -1,0 +1,57 @@
+.darkmode {
+
+    .colorWrapper  {
+        background-color: #000;
+
+         .subTitle, .sourceText, .keyText {
+            color:#FFF;
+        }
+
+        .chartTitle {
+            color:#000;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }    
+    
+        .colouredTitle {
+            background-color: #ffe500;
+            padding: 5px;
+        }
+
+        .subTitle {
+            margin-top: 15px;
+        }
+
+        #chartContainer svg {    
+                text {
+                    fill:#FFF;
+                }
+
+                .line {
+                    stroke: #FFF;
+                }
+
+                .x path, .x line {
+                    fill: none;
+                    stroke: #cccccc;
+                    shape-rendering: crispEdges;
+                }
+
+                .heading {
+                    fill: #cccccc;
+                }
+
+                .periodLine {
+                    stroke: #bdbdbd;
+                }
+
+                .periodLabel {
+                    fill: #cccccc;
+                }
+
+                .dashed.y line {
+                    stroke: #dcdcdc;
+                }
+            }
+    }
+}
