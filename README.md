@@ -1,22 +1,53 @@
-# create-svelte
+# Noisycharts
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+This is the next iteration of our experiments with [audiocharts](https://observablehq.com/@nickjevershed/data-sonification-prototype). It is an app for creating, editing and recording charts with the data represented sonically as well as graphically.
 
-## Creating a project
+Built with svelte, vite, d3 and tone-js. 
 
-If you're seeing this, you've probably already done this step. Congrats!
+To run locally:
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
 ```
+npm run dev
+```
+
+Example charts:
+
+bar chart
+https://docs.google.com/spreadsheets/d/1FiaIHyTZCeCVZY39n82eUWm4wBFBqQ0o3OYF7G9Brac/edit#gid=0
+
+rainfaill chart
+https://docs.google.com/spreadsheets/d/1XleDoofVMLqs4hdpfoEBt0m2hW086wWWW-cHaeehVDA/edit#gid=0
+
+global co2
+https://docs.google.com/spreadsheets/d/10EMTCsz3lOVDFImtDm_LxIufnDw0QMYLcqd6ceLNOdc/edit#gid=0
+
+dog barking attribution
+https://docs.google.com/spreadsheets/d/1AcvbBg8rX-gYxW6A_OMme-fxI8rirr71NSMFdhNDsf8/edit#gid=1261944629
+
+meta market cap
+https://docs.google.com/spreadsheets/d/1Ul1db0A8O3FPj052kZw0X_6W22efEFbJ2m1T2mW7ZmU/edit#gid=1161881088
+
+elon msuk
+https://docs.google.com/spreadsheets/d/11fiuWaK5Hiq9dBCAQnQjvhJIFMEOzXCRQyXH4hqw8FM/edit#gid=1161881088
+
+dog ranking line
+https://docs.google.com/spreadsheets/d/1iIMah1HsMrPThZ98a0JNQ0augHcQRM54surN7p5rIFw/edit#gid=1524900328
+
+pound hits all time low
+https://docs.google.com/spreadsheets/d/1V3bro2kQaK_HzKA1viV1zW3qbc1nQNrGGlG2vaPiTOs/edit#gid=1304924483
+
+inflation 
+https://docs.google.com/spreadsheets/d/1VhJMAYf7bl-3LwbDfrFIlcyJzxbdLx1K_GUeJOi7TJ8/edit#gid=1304924483
+
+zuck
+https://docs.google.com/spreadsheets/d/1UHlyqkwnGnL5hQd4irq2mcDfXJDQINjV_Mf0-8a71ZQ/edit#gid=0
+
+continuous testing
+https://docs.google.com/spreadsheets/d/14avK1c9BAywhkBHzXBtdW6lXm9OG_nuJ2b3Z2ePLNhg/edit#gid=0
 
 ## Developing
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Once you've installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
 ```bash
 npm run dev
