@@ -1,4 +1,4 @@
-# Noisycharts
+# Noisycharts Composer
 
 This is the next iteration of our experiments with [audiocharts](https://observablehq.com/@nickjevershed/data-sonification-prototype). It is an app for creating, editing and recording charts with the data represented sonically as well as graphically.
 
@@ -10,7 +10,7 @@ To run locally:
 npm run dev
 ```
 
-Example charts:
+Example chart data URLs:
 
 bar chart
 https://docs.google.com/spreadsheets/d/1FiaIHyTZCeCVZY39n82eUWm4wBFBqQ0o3OYF7G9Brac/edit#gid=0
