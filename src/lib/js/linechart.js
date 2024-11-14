@@ -1,5 +1,5 @@
 import * as d3 from "d3"
-import { getLongestKeyLength, numberFormat, numberFormatSpeech, makeSafe } from './toolbelt';
+import { getLongestKeyLength, numberFormat, numberFormatSpeech, makeSafe, getEveryNth } from './toolbelt';
 import colorTools from "$lib/js/colortools"
 import ColorScale from "$lib/js/colorscale"
 import schemes from '$lib/data/colorschemes.json'
@@ -26,6 +26,8 @@ export default class lineChart {
         this.width = settings.width
         this.height = settings.height
         this.data = null
+        this.xAxisType = null
+        this.xTimeClicks = []
     }
 
     render(newSettings) {
@@ -72,6 +74,7 @@ export default class lineChart {
             breaks,
             lines,
             invertY,
+            timeClick,
             xColumn,
             yColumn,
             $tooltip,
@@ -82,6 +85,7 @@ export default class lineChart {
             
         datum = JSON.parse(JSON.stringify(data))
         console.log("datum", datum)
+        console.log("timeClick", timeClick)
         let chartWidth = width
         let chartHeight = height
         width = width - marginleft - marginright
@@ -106,6 +110,7 @@ export default class lineChart {
         let hideNullValues = "yes"
         let chartValues = []
         let chartKeyData = {}
+        let xAxisValues = []
         let x
         let xVar = this.xVar
         let spareKeys = this.spareKeys
@@ -150,6 +155,7 @@ export default class lineChart {
         console.log(width, height, marginleft, marginright)  
 
         if (parseTime && typeof xVar == "string") {
+            this.xAxisType = "time"
             x = d3.scaleTime()
             .rangeRound([0, width])
         } else if (!(xVar instanceof Date)) {
@@ -219,6 +225,7 @@ export default class lineChart {
                 console.log("parsing")
                 d[xVar] = parseTime(d[xVar])
             }
+            xAxisValues.push(d[xVar])
         })
      
         spareKeys.forEach((key) => {
@@ -297,11 +304,22 @@ export default class lineChart {
             ? parseInt(minY)
             : d3.min(chartValues)
     
-        x.domain(d3.extent(datum, (d) => d[xVar]))
-    
+        let xExtent = d3.extent(datum, (d) => d[xVar])    
+        x.domain(xExtent)
+        // console.log(this.xAxisType, timeClick)
+        // if (this.xAxisType == "time" && timeClick) {
+        //     // Makes an array of dates for each week
+        //     // this.xTimeClicks = d3.timeWeeks(xExtent[0], xExtent[1]);
+        //     this.xTimeClicks = getEveryNth(xAxisValues, timeClick)
+        // }
+
+        // console.log("xTimeClick", this.xTimeClicks)
+
         y.domain([min, max])
         
         const xTicks = Math.round((width/textScaling) / 110)
+
+        // timeAxis.ticks(d3.time.week, 1)
     
         const yTicks = (yScaleType === "scaleLog") ? 3 : 5
         // const yTicks = 10
@@ -540,7 +558,6 @@ export default class lineChart {
                 .attr("stroke-width", 4)
                 .attr("d", lineGenerators[key])
 
-            
     
             const tempLabelData = chartKeyData[key].filter((d) => d != null)
             let lineLabelAlign = "start"
@@ -713,7 +730,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
         // sonic.init(this.sonicData,this.x, this.y, this.xVar, this.keyOrder, this.margin, this.domain, duration/1000)
         
         setTimeout(() => {   
-            sonic.playAudio(options, this.domainY, this.domainX, this.interval, this.data, spareKeys,newAnimateContinuous, newAnimateDiscrete, makeCircle)
+            sonic.playAudio(options, this.domainY, this.domainX, this.interval, this.data, spareKeys, newAnimateContinuous, newAnimateDiscrete, makeCircle)
 
             // animation(spareKeys)
         }, 2000)

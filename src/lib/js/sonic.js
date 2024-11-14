@@ -1,6 +1,6 @@
 import * as tone from 'tone'
 import * as d3 from 'd3' 
-import { numberFormatSpeech } from './toolbelt'
+import { numberFormatSpeech, getEveryNth } from './toolbelt'
 import instruments from '$lib/data/instruments.json';
 import notes from '$lib/data/notes.json';
 
@@ -24,8 +24,10 @@ export default class sonic {
   
   constructor(settings) {
       this.synths = []
+      this.kickDrum = null
       this.panners = []
       // this.synth2 = null
+      this.xTimeClicks = []
       this.isPlaying = false
       this.hasRun = false
       this.notes = []
@@ -52,6 +54,8 @@ export default class sonic {
 
     console.log("pan domain",pannerScale.range())    
 
+    this.kickDrum = new tone.MembraneSynth().toDestination();
+    // this.kickDrum.triggerAttackRelease("C2", "16n")  
     // Loop through the instruments object and make a synth object for each one in this.synths
 
     options.selectedInstruments.forEach((selectedInstrument,i) => {
@@ -222,10 +226,9 @@ export default class sonic {
   }
   
   playAudio(options, domainY, domainX, interval, data, keys = [], animateCont, animateDisc, makeCircle, selected = []) {
-    
+    let self = this
     // note duration in seconds
     
-
     // Re-do domainY and domainX as audio and label domains as X and Y do not make sense for audio?
 
     const note = options.duration / data.length
@@ -239,6 +242,7 @@ export default class sonic {
     let sonicData = {}
     let synths = this.synths
     // let synth2 = this.synth2
+  
     var hasRun = this.hasRun
     let dataKeys = Object.keys(data[0])
 
@@ -265,6 +269,20 @@ export default class sonic {
         }
         })
     })
+
+    // Reset xTimeClicks
+    
+    self.xTimeClicks = []
+
+    let xAxisValues = []
+    data.forEach((d, i) => {
+      xAxisValues.push(d[xVar])
+    })
+
+    if (options.timeClick) {
+      self.xTimeClicks = getEveryNth(xAxisValues, options.timeClick)
+    }
+    
 
     // Setting the scale range for linear scale
     
@@ -328,7 +346,7 @@ export default class sonic {
             if (options.audioRendering == "discrete") {
               
               synth.sync()
-
+              self.kickDrum.sync()
               // if (options.selectedInstrument === "Sad Trombone" || options.selectedInstrument === "Cheering") {
               //   console.log("syncing")
               //   synth2.sync()
@@ -344,15 +362,20 @@ export default class sonic {
               console.log("selected", selected)
               filterData = sonicData[key].filter(d => selected.includes(d[xVar]))
             }
-            console.log("filterData2", filterData)
+
             for (let i = 0; i < filterData.length; i++) {
               const d = filterData[i];
+              // console.log(d[xVar])
               if (options.audioRendering == "discrete") {
                   
                 if (options.selectedInstrument != "Sad Trombone" && options.selectedInstrument != "Cheering") {
                   // synth.volume.value = -12
                   synth.triggerAttackRelease(scale(d[key]), note, note * i)
-                  
+              
+                  if (self.xTimeClicks.some(date => date.getTime() === d[xVar].getTime() )) {
+                    self.kickDrum.triggerAttackRelease("C2", "8n", note * i)
+                  }
+
                   tone.Transport.schedule(function(){
                       animateDisc(key, i, filterData.length)
                       // synth.volume.rampTo(volume(d[key]), note);
@@ -457,7 +480,7 @@ export default class sonic {
 
     let isPlaying = this.isPlaying
 
-    let self = this
+   
     async function noiseLoop() {    
 
       if (!isPlaying) {

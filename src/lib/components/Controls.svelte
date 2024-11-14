@@ -78,6 +78,20 @@
         </Column>
       </Row>
 
+      <Row>
+        <Column>
+          <RadioButtonGroup legendText="Enable x axis cues" bind:selected={options.timeClickEnabled}>
+            <RadioButton labelText="No" value={false} />
+            <RadioButton labelText="Yes" value={true} />
+          </RadioButtonGroup>
+        </Column>
+        <Column>
+          {#if options.timeClickEnabled}
+          <Slider bind:value={options.timeClick} min={2} max={100} labelText="Kick every N values"/>
+          {/if}
+        </Column>
+      </Row>
+
       <h3>Instruments</h3>
       <Row>
       {#each options.selectedInstruments as selectedInstrument}  

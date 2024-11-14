@@ -51,7 +51,7 @@
           <Column>
             <h2>2. Select your chart type</h2>
             {#each activeCharts as chart, i}
-            <div class="chartBlock" class:active={chart.active} on:click={() => createChart({chart})}>
+            <div class="chartBlock" class:active={chart.active} on:click={() => createChart({chart}, 'buttons')}>
               <div class="chart-interior">{chart.type}</div>
             </div>
             {/each}
@@ -91,7 +91,7 @@
                   {/if}
                   <div class="row footer" id="footer">
                     <div class="sourceText">
-                      {#if watermark}<span>A <b>noisychart</b> by @nickevershed for The Guardian. </span>{/if}{#if settings.source}<span id="sourceText" contenteditable="true">{settings.source}</span>{/if}
+                      {#if watermark}<span>A <b>noisychart</b> by @nickevershed </span>{/if}{#if settings.source}<span id="sourceText" contenteditable="true">{settings.source}</span>{/if}
                     </div>
                   </div>     
                 </div>
@@ -106,6 +106,13 @@
               <Button on:click={playChart} disabled='{!loader}'>
                 Play chart
               </Button>
+              
+            </Column>
+            <Column>
+              
+              <!-- <Button on:click={recordAudio} disabled='{!loader}'>
+                Export audio
+              </Button> -->
               
             </Column>
           </Row>
@@ -140,7 +147,12 @@
     import chartTypes from '$lib/data/chartTypes.json';
     // console.log(linechartJson.sheets)
     // SUV
-    let inputURL = "https://docs.google.com/spreadsheets/d/1hxk6BFGjfsbTV8uRqlJWCvuiqZXUyqAgPrQXU08bVuk/edit#gid=0"
+    // let inputURL = "https://docs.google.com/spreadsheets/d/1hxk6BFGjfsbTV8uRqlJWCvuiqZXUyqAgPrQXU08bVuk/edit#gid=0"
+
+    // Polling
+
+    let inputURL = "https://docs.google.com/spreadsheets/d/1HqFpDPomxnanDcMf92c8-f2m6STKO8ua9wtAUCbPjtw/edit?gid=0"
+
     let templatesLoaded = false;
     async function loadJson(url) {
       try {
@@ -228,7 +240,9 @@
       invertAudio:false,
       selectedInstruments:[{seriesName: "Series 1", instrument: "Kalimba"}],
       scaleNotes: false,
-      animationStyle: 'playthrough'
+      animationStyle: 'playthrough',
+      timeClickEnabled:false,
+      timeClick:null
     }
   
 
@@ -319,20 +333,27 @@
       if (chartURL) {
         fetch(chartURL)
         .then((response) => response.json())
-        .then((results) => setupChart(results));
+        .then((results) => { 
+          
+          // Update chart data with the spreadsheet/json data
+          chartData = results
+          let chartType = results['sheets']['chartId'][0]['type']
+          let chartSettings = {chart: activeCharts.filter((d) => d.type === chartType)[0]}
+          createChart(chartSettings, 'yachtURL')
+
+        });
   
   
       }
     }
   
-    async function createChart(chart) {
-  
+    async function createChart(chartObj, from) {
 
+      chartType = chartObj.chart.type
+      
       // Get the chart type
   
-      chartType = chart.chart.type
-  
-      console.log("chartType", chart.chart.type)
+      console.log("chartType", chartType)
       // check if it's a supported chart type
   
       if (supportedCharts.includes(chartType)) {
@@ -366,7 +387,8 @@
         settings.chartKey = true
         // settings.positionCounter = true
         settings.textScaling = 1
-        
+
+        // settings.timeClick = 10
         // If no color scheme set by user for the chart and no userkey set, then use the color scheme selected
   
         if (settings.colorScheme == "" && settings.userkey.length == 0) {
@@ -409,6 +431,10 @@
       chartMaker.play(options, sonic)
     }
   
+    function exportAudio() {
+      // console.log("Options", options)
+      chartMaker.play(options, sonic)
+    }
   
     function loadInstruments(event) {
       if (event) {
@@ -428,8 +454,6 @@
         // }
       }
   
-  
-      
     }
   
     function setDimensions(event) {

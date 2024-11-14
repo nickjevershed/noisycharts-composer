@@ -4,18 +4,21 @@ export function getJson(url) {
     return fetch(`${url}`).then(r => r.json())
   }
   
-  export function getTemplate(path) {
-    return fetch(`${path}`).then(r => r.text())
-  }
+export function getTemplate(path) {
+  return fetch(`${path}`).then(r => r.text())
+}
   
+export function swapArray(arr) {
+  return arr[0].map((col, i) => arr.map(row => row[i]));
+}
 
-  export function swapArray(arr) {
-    return arr[0].map((col, i) => arr.map(row => row[i]));
-  }
+export function uniqueArray(arr) {
+  return arr.filter((d, i) => i === arr.indexOf(d));
+}
 
-  export function uniqueArray(arr) {
-    return arr.filter((d, i) => i === arr.indexOf(d));
-  }
+export function getEveryNth(arr, n) {
+  return arr.filter((_, index) => index % n === 0);
+}  
   
 export function makeSafe(s) {
   return s.replace(/^[^a-z]+|[^\w:.-]+/gi, "_");
