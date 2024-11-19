@@ -327,7 +327,19 @@
       // is it a yacht URL
   
       if (inputURL.includes("interactive.guim.co.uk")) {
-        chartURL = inputURL
+        
+        // is it a front-end chart URL
+
+        if (inputURL.includes("embed"))  {
+          let docKey = inputURL.split("key=")[1].split("&location=")[0]
+          let docLocation = inputURL.split("&location=")[1]
+          chartURL = `https://interactive.guim.co.uk/${docLocation}/${docKey}.json`
+        }
+        
+        else {
+          chartURL = inputURL
+        }
+        
       }
   
       if (chartURL) {

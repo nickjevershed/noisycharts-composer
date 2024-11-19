@@ -48,7 +48,8 @@ export default class lineChart {
             yScaleType, 
             xAxisLabel, 
             yAxisLabel,
-            xAxisFormat, 
+            xAxisFormat,
+            xAxisDateFormat, 
             interval,
             baseline, 
             tooltip, 
@@ -345,9 +346,9 @@ export default class lineChart {
             
         // }
 
-        if (xAxisFormat != "") {
-            xAxisFormat = d3.timeFormat(xAxisFormat)
-            xVarFormatterPosition = d3.timeFormat(xAxisFormat)
+        if (xAxisDateFormat != "") {
+            xAxisFormat = d3.timeFormat(xAxisDateFormat)
+            xVarFormatterPosition = d3.timeFormat(xAxisDateFormat)
             }
         else {
           if (parseTime) {
