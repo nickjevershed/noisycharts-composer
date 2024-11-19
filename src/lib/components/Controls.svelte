@@ -108,7 +108,7 @@
 
       <Row>
         <Column>
-          <Select inline labelText="Size preset" on:change={setDimensions}>
+          <Select inline labelText="Size preset" on:change={(event) => setDimensions(event.target.value)}>
             {#each sizePresets as preset}
               <SelectItem value={preset.Sizes} text={preset.Text} />
             {/each}

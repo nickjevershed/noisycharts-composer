@@ -456,11 +456,11 @@
   
     }
   
-    function setDimensions(event) {
-      if (event) {
-        console.log(event)
-        width = Number(event.detail.split(",")[0])
-        height = Number(event.detail.split(",")[1])
+    function setDimensions(value) {
+      if (value) {
+        console.log(value)
+        width = Number(value.split(",")[0])
+        height = Number(value.split(",")[1])
         let ratio = width / 620
         settings.textScaling = ratio
         settings.marginbottom = settings.marginbottom * ratio

@@ -19,7 +19,46 @@ export function uniqueArray(arr) {
 export function getEveryNth(arr, n) {
   return arr.filter((_, index) => index % n === 0);
 }  
+
+// getBrowser tells us the browser so we can adjust the web speech API settings as needed
+
+export function getBrowser() {
+  let browserInfo = navigator.userAgent;
+  let browser;
+  if (browserInfo.includes('Opera') || browserInfo.includes('Opr')) {
+    browser = 'Opera';
+  } else if (browserInfo.includes('Edg')) {
+    browser = 'Edge';
+  } else if (browserInfo.includes('Chrome')) {
+    browser = 'Chrome';
+  } else if (browserInfo.includes('Safari')) {
+    browser = 'Safari';
+  } else if (browserInfo.includes('Firefox')) {
+    browser = 'Firefox'
+  } else {
+    browser = 'unknown'
+  }
+    return browser;
+}
   
+
+export function checkNull(obj, key) {
+  let result = null
+  if (obj) {
+    if (key in obj) {
+      if (obj[key] != "") {
+        return obj[key]
+      }
+    }
+    return result
+  }
+  else {
+    return result
+  }
+}
+
+
+
 export function makeSafe(s) {
   return s.replace(/^[^a-z]+|[^\w:.-]+/gi, "_");
 }

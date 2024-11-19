@@ -1,6 +1,6 @@
 import * as tone from 'tone'
 import * as d3 from 'd3' 
-import { numberFormatSpeech, getEveryNth } from './toolbelt'
+import { numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './toolbelt'
 import instruments from '$lib/data/instruments.json';
 import notes from '$lib/data/notes.json';
 
@@ -20,17 +20,65 @@ const trombone2 = {
           "baseUrl": "/"
       }  
 
+const clickSettings = {
+  "envelope": {
+    "attack": 0,
+    "decay": 0.1,
+    "sustain":0,
+    "release":0.1
+  },
+  "oscillator": 
+    {
+        "modulationFrequency": 0.2,
+        "type": "sine"
+    }
+ 
+}
+    
+
+// A function to get the type of interval between data points, eg. year, days, whatever
+
+function getInterval(settings, xVar, timeSettings) {
+
+  // default to the x column name
+
+  let result = xVar
+
+  // user has definted the interval, cool!
+
+  if (checkNull(settings, "interval")) {
+
+    console.log("user has defined the interval")
+    result = settings.interval
+    
+  }
+
+  // no defined interval and it's a date  
+
+  else if (timeSettings) {
+    return timeSettings.timescale
+  }
+
+  return result
+
+}
+
+
 export default class sonic {
   
   constructor(settings) {
+      this.destination = tone.Destination
       this.synths = []
       this.kickDrum = null
+      this.click = null
       this.panners = []
       // this.synth2 = null
       this.xTimeClicks = []
       this.isPlaying = false
       this.hasRun = false
       this.notes = []
+      this.speech = window.speechSynthesis
+      
       notes.forEach((note) => {
         this.notes.push(note.Frequency)
       })
@@ -54,7 +102,9 @@ export default class sonic {
 
     console.log("pan domain",pannerScale.range())    
 
-    this.kickDrum = new tone.MembraneSynth().toDestination();
+    this.kickDrum = new tone.MembraneSynth().connect(this.destination);
+    this.click = new tone.Synth(clickSettings).connect(this.destination);
+
     // this.kickDrum.triggerAttackRelease("C2", "16n")  
     // Loop through the instruments object and make a synth object for each one in this.synths
 
@@ -71,7 +121,7 @@ export default class sonic {
       console.log("pan value", pannerScale(i))
       // IF not a sample, update array of synths with a new synth object
 
-      let panner = new tone.Panner(pannerScale(i)).toDestination()
+      let panner = new tone.Panner(pannerScale(i)).connect(this.destination);
 
       if (synthType != "Sampler" && synthType != "Player") {
           let newSynth = new tone[synthType](synthPreset)
@@ -197,14 +247,33 @@ export default class sonic {
   speaker(text) {
   
     return new Promise( (resolve, reject) => {
-  
+    let self = this
+
+    // check if speechSynthesis is supported
+
     if ('speechSynthesis' in window) {
-     
+      // clear any current speech
+
       var msg = new SpeechSynthesisUtterance();
-  
+      
       msg.text = text
-  
-      window.speechSynthesis.speak(msg);
+      msg.lang = 'en-GB'
+
+      // Speech synthesis is very quirky in different browsers, hence we tweak the settings
+      // I don't know why but Firefox's default voice for en-US is an awful robot?
+
+      let browser = getBrowser()
+
+      if (browser == 'Firefox') {
+        msg.rate = 1.1
+        msg.lang = 'en-AU'
+      }
+
+      if (browser == 'Safari') {
+        msg.rate = 1.1
+      }
+      
+      self.speech.speak(msg);
   
       msg.onend = function() {
   
