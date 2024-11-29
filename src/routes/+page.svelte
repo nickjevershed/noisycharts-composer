@@ -91,7 +91,7 @@
                   {/if}
                   <div class="row footer" id="footer">
                     <div class="sourceText">
-                      {#if watermark}<span>A <b>noisychart</b> by @nickevershed </span>{/if}{#if settings.source}<span id="sourceText" contenteditable="true">{settings.source}</span>{/if}
+                      {#if watermark}<span>A <b>noisychart</b> by @nickevershed </span>{/if}{#if settings.source}Source: <span id="sourceText" contenteditable="true">{settings.source}</span>{/if}
                     </div>
                   </div>     
                 </div>
@@ -185,7 +185,7 @@
 
     let statusMessage = "Waiting to load chart..."
     let loader = false
-    let watermark = true
+    let watermark = false
     let settings = {"title":"This is a headline", 
                   "subtitle":"This is a subtitle", 
                   "source":"The source text",
@@ -242,7 +242,8 @@
       scaleNotes: false,
       animationStyle: 'playthrough',
       timeClickEnabled:false,
-      timeClick:null
+      timeClick:null,
+      interval:null
     }
   
 

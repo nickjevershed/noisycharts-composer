@@ -90,6 +90,11 @@
           <Slider bind:value={options.timeClick} min={2} max={100} labelText="Kick every N values"/>
           {/if}
         </Column>
+        <Column>
+     
+          <TextInput placeholder="" bind:value={options.interval} labelText="Each note is a:"/>
+        
+        </Column>
       </Row>
 
       <h3>Instruments</h3>

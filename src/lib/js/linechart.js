@@ -87,6 +87,7 @@ export default class lineChart {
         datum = JSON.parse(JSON.stringify(data))
         console.log("datum", datum)
         console.log("timeClick", timeClick)
+        console.log("settings", this.settings)
         let chartWidth = width
         let chartHeight = height
         width = width - marginleft - marginright
@@ -145,7 +146,7 @@ export default class lineChart {
         }
       
         const parseTime = (dateFormat!="") ? d3.timeParse(dateFormat) : ""
-        // console.log("parseTime", parseTime)
+        console.log("parseTime", parseTime)
         const parsePeriods = (periodDateFormat!="") ? d3.timeParse(periodDateFormat) : ""
       
         marginright = marginright + getLongestKeyLength(svg, spareKeys, isMobile, lineLabelling)
@@ -347,11 +348,13 @@ export default class lineChart {
         // }
 
         if (xAxisDateFormat != "") {
+            console.log("what", xAxisDateFormat)
             xAxisFormat = d3.timeFormat(xAxisDateFormat)
             xVarFormatterPosition = d3.timeFormat(xAxisDateFormat)
             }
         else {
           if (parseTime) {
+            console.log("Time date")
             if (dateFormat == "%Y") {
                 xAxisFormat = d3.timeFormat("%Y")
                 xVarFormatterPosition = d3.timeFormat("%Y")
@@ -466,10 +469,11 @@ export default class lineChart {
       
         features
             .append("text")
-            .attr("transform", "rotate(-90)")
+            // .attr("transform", "rotate(-90)")
             .attr("y", 6)
             .attr("dy", "0.71em")
             .attr("text-anchor", "end")
+            .style("font-size", `${textScaling * 12}px`)
             .text(yAxisLabel)
       
         features
@@ -655,6 +659,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
         // animates one circle given x y data in an array 
 
         function makeCircle(v) {
+            if (options.animationStyle == "playthrough") {  
             console.log("Make circle", v)
             d3.select("#features")
                 .append("circle")
@@ -668,6 +673,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
                 .attr("r",40)
                 .style("opacity",0)
                 .remove()
+            }
         }
 
 
@@ -693,7 +699,10 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
     
             // Continous line with little circle pop-ins for discrete data
             var pause = (i === 0) ?  0 : note
-            
+            d3.select("#positionCounterValue")
+                .text(self.xVarFormatterPosition(self.data[i][self.xVar]))
+
+            if (options.animationStyle == "playthrough") {   
             d3.select("#features")
                 .append("circle")
                 .attr("cy", self.y(self.data[i][key]))
@@ -707,10 +716,6 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
                 .style("opacity",0)
                 .remove()
             
-            d3.select("#positionCounterValue")
-                .text(self.xVarFormatterPosition(self.data[i][self.xVar]))
-
-            if (options.animationStyle == "playthrough") {    
                 currentClip.transition()
                     .duration(note)
                     .ease(d3.easeLinear)
@@ -731,7 +736,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
         // sonic.init(this.sonicData,this.x, this.y, this.xVar, this.keyOrder, this.margin, this.domain, duration/1000)
         
         setTimeout(() => {   
-            sonic.playAudio(options, this.domainY, this.domainX, this.interval, this.data, spareKeys, newAnimateContinuous, newAnimateDiscrete, makeCircle)
+            sonic.playAudio(options, this.domainY, this.domainX, this.data, spareKeys, newAnimateContinuous, newAnimateDiscrete, makeCircle)
 
             // animation(spareKeys)
         }, 2000)

@@ -13,6 +13,7 @@
                 "xAxisLabel": "",
                 "yAxisLabel": "",
                 "xAxisFormat": "",
+                "xAxisDateFormat":"",
                 "baseline": "",
                 "tooltip": "",
                 "periodDateFormat": "",

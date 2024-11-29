@@ -3,6 +3,7 @@ import * as d3 from 'd3'
 import { numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './toolbelt'
 import instruments from '$lib/data/instruments.json';
 import notes from '$lib/data/notes.json';
+import { browser } from '$app/environment';
 
 const timer = ms => new Promise(res => setTimeout(res, ms))
 
@@ -77,7 +78,9 @@ export default class sonic {
       this.isPlaying = false
       this.hasRun = false
       this.notes = []
-      this.speech = window.speechSynthesis
+      if (browser) {
+        this.speech = window.speechSynthesis
+      }
       
       notes.forEach((note) => {
         this.notes.push(note.Frequency)
@@ -294,7 +297,7 @@ export default class sonic {
   });
   }
   
-  playAudio(options, domainY, domainX, interval, data, keys = [], animateCont, animateDisc, makeCircle, selected = []) {
+  playAudio(options, domainY, domainX, data, keys = [], animateCont, animateDisc, makeCircle, selected = []) {
     let self = this
     // note duration in seconds
     
@@ -580,7 +583,7 @@ export default class sonic {
 
           await timer(1200);
 
-          const text3 = await self.speaker(`Each note is a ${interval}, and the chart goes from ${domainX[0]} to ${domainX[1]}`)
+          const text3 = await self.speaker(`Each note is a ${options.interval}, and the chart goes from ${domainX[0]} to ${domainX[1]}`)
         }
         
         else if (options.chartMode === "human does voiceover") {
