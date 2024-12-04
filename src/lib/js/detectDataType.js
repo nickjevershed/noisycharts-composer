@@ -3,7 +3,7 @@
 // date: ...
 // https://en.wikipedia.org/wiki/Decimal_mark
 // https://en.wikipedia.org/wiki/Date_format_by_country
-import { uniqueArray } from "$lib/js/toolbelt";
+import { uniqueArray } from "$lib/js/utils";
 import { getDateAnalysis } from "$lib/js/typeDate";
 import { getNumberAnalysis } from "$lib/js/typeNumber";
 

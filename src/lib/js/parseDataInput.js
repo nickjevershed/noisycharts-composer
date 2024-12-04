@@ -1,5 +1,5 @@
 import getDataTable from "$lib/js/parseDataTableRaw";
-import { swapArray } from "$lib/js/toolbelt";
+import { swapArray } from "$lib/js/utils";
 import Papa from 'papaparse';
 
 // meta keys

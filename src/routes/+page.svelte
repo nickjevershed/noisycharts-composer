@@ -33,7 +33,7 @@
                         <TextInput placeholder="Paste" bind:value={inputURL}/>
                       </Column>
                       <Column>
-                          <Button on:click={loadChart} disabled={inputURL === ''}>
+                          <Button on:click={loadData} disabled={inputURL === ''}>
                             Load chart
                           </Button>
                       </Column>   
@@ -110,7 +110,7 @@
             </Column>
             <Column>
               
-              <!-- <Button on:click={recordAudio} disabled='{!loader}'>
+              <!-- <Button on:click={exportAudio} disabled='{!loader}'>
                 Export audio
               </Button> -->
               
@@ -137,7 +137,8 @@
       TextArea
     } from "carbon-components-svelte";
     import { onMount } from 'svelte';
-    import { getJson, merge, config } from '$lib/js/toolbelt';
+    import { getJson, merge, config } from '$lib/js/utils';
+    import { setDefaults } from "$lib/js/setDefaults";
     import { checkData, parseDataInput, arrToJson, givePrompt } from "$lib/js/parseDataInput"
     import { checkDatasetShape, checkDataIsFormattedForChartType } from "$lib/js/checkDatasetShape"
     import { dragger } from '$lib/js/dragger';
@@ -205,7 +206,9 @@
       "sheets": {}
     }
 
-    chartData.sheets['template'] = settings
+    // Because we still support the legacy google sheets json output data format, each object needs to be the first element of an array
+    
+    chartData.sheets['template'] = [settings]
 
     let chartDataTypes = []
     let activeCharts = chartTypes.filter(d => d.noisycharts_supported)
@@ -229,6 +232,9 @@
     $: axisPad = 12 * settings.textScaling
     $: lineStroke = Math.max(2 * settings.textScaling, 4)
     $: cssVarStyles = `--axis-text:${axisText}px;--axis-pad:${axisPad}px;--footer-text:${footerText}px;--line-stroke:${lineStroke}px;background-image: url("${customBackground}");background-size: cover;`;
+    
+    // Sonification and animation option object, linked to the svelte controls
+    
     let options = {
       audioRendering: "discrete",
       chartMode:'no voiceover',
@@ -243,7 +249,8 @@
       animationStyle: 'playthrough',
       timeClickEnabled:false,
       timeClick:null,
-      interval:null
+      interval:null,
+      recording:false,
     }
   
 
@@ -257,19 +264,33 @@
       
     if (txt != "" && checkData(txt)) {
 
+      // Parses the pasted text input
+      // The resulting obect has information about the data, like the inferred data type of each column, date formats, etc
+      // This is important for setting sensible default options
+
       let resp = parseDataInput(txt)
 
       chartDataTypes = resp
 
       let data = arrToJson(resp)
-
-      console.log("Here be dragons")
       
-      console.log(resp)
-
+      console.log("resp",resp)
+     
       let specs = checkDatasetShape(data, resp.type, resp.head)
-
+      console.log("specs", specs)
       chartDataTypes.datasheet = specs
+
+      for (const col of chartDataTypes.type) {
+
+        if (col.list[0] == "date") {
+          settings.dateFormat = col.format
+          settings.xAxisDateFormat = col.format
+          break
+        }
+
+      }
+
+      console.log("settings", settings)
 
       let filteredByShape = chartTypes.filter(d => d.config[specs.shape] && d.noisycharts_supported)
 
@@ -311,7 +332,7 @@
 
     // Loads chart data from a URL
   
-    function loadChart() {
+    function loadData() {
       console.log(inputURL)
       chartMaker = {}
       console.log("chartMaker",chartMaker)
@@ -352,6 +373,7 @@
           chartData = results
           let chartType = results['sheets']['chartId'][0]['type']
           let chartSettings = {chart: activeCharts.filter((d) => d.type === chartType)[0]}
+          options = setDefaults(chartData, options)
           createChart(chartSettings, 'yachtURL')
 
         });
@@ -379,17 +401,19 @@
   
         // Gets the default settings for each chart from a json file
         // If json is in the public directory 
+
         let defaults = await getJson(`/templates/${chartType}.json`)
      
         // Merges the default settings with any we have from a remote Google doc
   
         let merged = merge(defaults, chartData)
         
+        console.log("merged",merged)
         // Parsing the settings from the merged object into a single settings object, converting thing etc
   
         settings = config(merged.sheets)
   
-        console.log("settings",settings)
+        console.log("settings1",settings)
   
         // Resize as needed, tell all the things what to do
   

@@ -1,7 +1,7 @@
 import * as d3 from "d3"
 import colorTools from "./colortools"
 import ColorScale from "./colorscale"
-import { numberFormat, mobileCheck, stackMin, stackMax } from './toolbelt';
+import { numberFormat, mobileCheck, stackMin, stackMax } from './utils';
 
 export default class chartychart {
 

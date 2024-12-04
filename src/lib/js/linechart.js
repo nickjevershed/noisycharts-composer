@@ -1,5 +1,5 @@
 import * as d3 from "d3"
-import { getLongestKeyLength, numberFormat, numberFormatSpeech, makeSafe, getEveryNth } from './toolbelt';
+import { getLongestKeyLength, numberFormat, numberFormatSpeech, makeSafe, getEveryNth } from './utils';
 import colorTools from "$lib/js/colortools"
 import ColorScale from "$lib/js/colorscale"
 import schemes from '$lib/data/colorschemes.json'

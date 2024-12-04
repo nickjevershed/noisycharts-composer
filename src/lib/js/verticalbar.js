@@ -2,7 +2,7 @@ import * as d3 from "d3"
 import colorTools from "$lib/js/colortools"
 import ColorScale from "$lib/js/colorscale"
 import schemes from '$lib/data/colorschemes.json'
-import { numberFormat, mobileCheck, stackMin, stackMax } from '$lib/js/toolbelt';
+import { numberFormat, mobileCheck, stackMin, stackMax } from '$lib/js/utils';
 import * as tone from 'tone'
 import Sonic from "./sonic"
 export default class Stackedbar {

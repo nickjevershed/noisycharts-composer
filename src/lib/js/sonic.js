@@ -1,6 +1,6 @@
 import * as tone from 'tone'
 import * as d3 from 'd3' 
-import { numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './toolbelt'
+import { numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './utils'
 import instruments from '$lib/data/instruments.json';
 import notes from '$lib/data/notes.json';
 import { browser } from '$app/environment';
@@ -8,6 +8,13 @@ import { browser } from '$app/environment';
 const timer = ms => new Promise(res => setTimeout(res, ms))
 
 // The main function for playing a series of data
+
+const dateMap = {
+  "%Y":"Year",
+  "%y":"Year",
+  "%B":"Month",
+  "%b":"Month",
+}
 
 const trombone2 = {
   "urls": {
@@ -20,6 +27,7 @@ const trombone2 = {
   },
           "baseUrl": "/"
       }  
+
 
 const clickSettings = {
   "envelope": {
@@ -87,6 +95,17 @@ export default class sonic {
       })
   }
 
+
+  // setDestination(dest) {
+  //   if (dest == "speakers") {
+  //     this.destination = tone.Destination
+  //   }
+  
+  //   if (dest == "recorder") {
+  //     this.destination = this.recorder
+  //   }
+  // }
+
   async loadSynths(options) {
     console.log("Loading synths...")
     
@@ -106,6 +125,7 @@ export default class sonic {
     console.log("pan domain",pannerScale.range())    
 
     this.kickDrum = new tone.MembraneSynth().connect(this.destination);
+
     this.click = new tone.Synth(clickSettings).connect(this.destination);
 
     // this.kickDrum.triggerAttackRelease("C2", "16n")  
@@ -659,9 +679,6 @@ export default class sonic {
    
 
 } // end playAudio
-
-
-
 
 }
 

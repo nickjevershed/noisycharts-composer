@@ -1,4 +1,4 @@
-import { merge, contains } from "$lib/js/toolbelt"
+import { merge, contains } from "$lib/js/utils"
 
 /**
  * Checks if a dataset is wide or long.

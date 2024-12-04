@@ -63,9 +63,13 @@ export function makeSafe(s) {
   return s.replace(/^[^a-z]+|[^\w:.-]+/gi, "_");
 }
 
-  export function merge(to, from) {
+
+// eg let merged = merge(defaults, chartData)
+
+export function merge(to, from) {
   
       for (const n in from) {
+          console.log(n)
           if (typeof to[n] != 'object') {
             to[n] = from[n];
           } else if (typeof from[n] == 'object') {
@@ -73,7 +77,7 @@ export function makeSafe(s) {
           }
       }
       return to;
-  };
+};
   
   export function contains(a, b) {
   
@@ -507,6 +511,68 @@ export function makeSafe(s) {
     }
   
     return status
+  
+  }
+
+
+  export function analyseTime(data, settings) {
+    let results = {}
+    results.interval = null
+    results.timescale = null
+    results.suggestedFormat = null
+    let xVar = null 
+    let dataKeys = Object.keys(data[0])
+    let xColumn = checkNull(settings, 'xColumn')
+    if (!xColumn) {
+      xVar = dataKeys[0]
+    }
+    else {
+      xVar = xColumn
+    }
+  
+    let time1 = data[0][xVar]
+    let time2 = data[1][xVar]
+   
+    let timeDiff = Math.abs(time2 - time1); // difference in milliseconds
+  
+    // Define time constants
+    const ONE_HOUR = 1000 * 60 * 60;
+    const ONE_DAY = ONE_HOUR * 24;
+    const ONE_WEEK = ONE_DAY * 7;
+    const ONE_MONTH = ONE_DAY * 28; // approximate
+    const ONE_QUARTER = ONE_MONTH * 3; // approximate
+    const ONE_YEAR = ONE_DAY * 365;
+  
+    // Determine the appropriate time unit and strftime format
+    if (timeDiff < ONE_DAY) {
+      results.interval = timeDiff / ONE_HOUR;
+      results.timescale = 'hour';
+      results.suggestedFormat = '%H:%M'; // hours and minutes
+    } else if (timeDiff < ONE_WEEK) {
+      results.interval = timeDiff / ONE_DAY;
+      results.timescale = 'day';
+      results.suggestedFormat = '%d %b'; // day and month
+    } else if (timeDiff < ONE_MONTH) {
+      results.interval = timeDiff / ONE_WEEK;
+      results.timescale = 'week';
+      results.suggestedFormat = '%d %b'; // week of the year
+    } else if (timeDiff < ONE_QUARTER) {
+      results.interval = timeDiff / ONE_MONTH;
+      results.timescale = 'month';
+      results.suggestedFormat = '%B %Y'; // month and year
+    } 
+    else if (timeDiff < ONE_YEAR) {
+      results.interval = timeDiff / ONE_QUARTER;
+      results.timescale = 'quarter';
+      results.suggestedFormat = '%B %Y'; // month and year
+    }
+    else {
+      results.interval = timeDiff / ONE_YEAR;
+      results.timescale = 'year';
+      results.suggestedFormat = '%Y'; // year
+    }
+  
+    return results;
   
   }
   
