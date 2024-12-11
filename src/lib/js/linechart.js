@@ -84,7 +84,7 @@ export default class lineChart {
             $dropdown,
             textScaling } = (newSettings) ? newSettings : this.settings
             
-        datum = JSON.parse(JSON.stringify(data))
+        datum = data
         console.log("datum", datum)
         console.log("timeClick", timeClick)
         console.log("settings", this.settings)
@@ -178,23 +178,9 @@ export default class lineChart {
         
             // get all chart values for each key
             datum.forEach((d) => {
-            if (typeof d[key] == "string") {
-                if (d[key].includes(",")) {
-                if (!isNaN(d[key].replace(/,/g, ""))) {
-                    d[key] = +d[key].replace(/,/g, "")
-                    chartValues.push(d[key])
-                }
-                } else if (d[key] != "") {
-                if (!isNaN(d[key])) {
-                    d[key] = +d[key]
-                    chartValues.push(d[key])
-                }
-                } else if (d[key] == "") {
-                    d[key] = null
-                }
-            } else {
+
                 chartValues.push(d[key])
-            }
+            
             })
         })
     
@@ -223,10 +209,6 @@ export default class lineChart {
             }
       
         datum.forEach((d) => {
-            if ((parseTime && typeof d[xVar] == "string") || (parseTime && typeof d[xVar] == "number")) {
-                console.log("parsing")
-                d[xVar] = parseTime(d[xVar])
-            }
             xAxisValues.push(d[xVar])
         })
      

@@ -137,8 +137,10 @@
       TextArea
     } from "carbon-components-svelte";
     import { onMount } from 'svelte';
-    import { getJson, merge, config } from '$lib/js/utils';
+    import { schema } from 'newsroom-dojo';
+    import { getJson, merge, config, analyseTime } from '$lib/js/utils';
     import { setDefaults } from "$lib/js/setDefaults";
+    import { convertData } from "$lib/js/convertData";
     import { checkData, parseDataInput, arrToJson, givePrompt } from "$lib/js/parseDataInput"
     import { checkDatasetShape, checkDataIsFormattedForChartType } from "$lib/js/checkDatasetShape"
     import { dragger } from '$lib/js/dragger';
@@ -206,8 +208,7 @@
       "sheets": {}
     }
 
-    // Because we still support the legacy google sheets json output data format, each object needs to be the first element of an array
-    
+    // Because we still support the legacy google sheets json output data format, each object like settings etc needs to be the first element of an array
     chartData.sheets['template'] = [settings]
 
     let chartDataTypes = []
@@ -233,7 +234,7 @@
     $: lineStroke = Math.max(2 * settings.textScaling, 4)
     $: cssVarStyles = `--axis-text:${axisText}px;--axis-pad:${axisPad}px;--footer-text:${footerText}px;--line-stroke:${lineStroke}px;background-image: url("${customBackground}");background-size: cover;`;
     
-    // Sonification and animation option object, linked to the svelte controls
+    // Sonification and animation option object, linked to the svelte controls. Should probably rename to avoid confusion with the options object used by charts
     
     let options = {
       audioRendering: "discrete",
@@ -280,17 +281,18 @@
       console.log("specs", specs)
       chartDataTypes.datasheet = specs
 
+      // Sets the date time defaults
+
       for (const col of chartDataTypes.type) {
 
         if (col.list[0] == "date") {
           settings.dateFormat = col.format
-          settings.xAxisDateFormat = col.format
+          // settings.xAxisDateFormat = col.format
           break
         }
 
       }
-
-      console.log("settings", settings)
+    
 
       let filteredByShape = chartTypes.filter(d => d.config[specs.shape] && d.noisycharts_supported)
 
@@ -409,12 +411,27 @@
         let merged = merge(defaults, chartData)
         
         console.log("merged",merged)
-        // Parsing the settings from the merged object into a single settings object, converting thing etc
+
+        // Parsing the settings from the merged object into a single settings object, converting things etc
   
         settings = config(merged.sheets)
   
-        console.log("settings1",settings)
-  
+        console.log("settings1", settings)
+
+        let dataSchema = schema(settings.data);
+        
+        convertData(settings.data, settings)
+
+        // console.log("convertedData", settings.data)
+        // dateformat has been set so lets work out a good default interval etc
+
+        if (settings.dateFormat != "") {
+          let dateTimeResults = analyseTime(settings.data, settings)
+          console.log(dateTimeResults)
+          options.interval = String(dateTimeResults.interval) + " " + dateTimeResults.timescale
+          settings.xAxisDateFormat = dateTimeResults.suggestedFormat
+        }
+
         // Resize as needed, tell all the things what to do
   
         let furnitureHeight = document.querySelector("#furniture").getBoundingClientRect().height + document.querySelector("#footer").getBoundingClientRect().height

@@ -49,6 +49,7 @@ export default class Stackedbar {
           interval,
           periodDateFormat, 
           xAxisFormat,
+          xAxisDateFormat,
           x_axis_cross_y,
           xColumn,
           yColumn,
@@ -91,9 +92,8 @@ export default class Stackedbar {
     const features = d3.select("#features")
     features.selectAll("*").remove()
     colors = new ColorScale()
-    datum = JSON.parse(JSON.stringify(data))
-    
-
+    datum = data
+  
 
     if (dateFormat != "") {
         isTime = true
@@ -101,12 +101,12 @@ export default class Stackedbar {
       }
   
     if (timeInterval != "") {
-    timeInterval = timeInterval
+      timeInterval = timeInterval
     }
-    console.log(xAxisFormat)
+    console.log("xAxisFormat", xAxisFormat, xAxisDateFormat)
     
-    if (xAxisFormat != "") {
-        xAxisFormat = d3.timeFormat(xAxisFormat)
+    if (xAxisDateFormat != "") {
+        xAxisFormat = d3.timeFormat(xAxisDateFormat)
     } 
     else {
       if (dateParse) {
@@ -127,17 +127,17 @@ export default class Stackedbar {
 
     colors.set(keyColor.keys, keyColor.colors)  
 
-    datum.forEach((d) => {
-        if (dateParse != "") {
-          if (typeof d[xVar] === "string") {
-            d[xVar] = dateParse(d[xVar])
-          }
-        }
-        spareKeys.forEach((key, i) => {
-          d[key] = +d[key]
-        })
-        // d.Total = d3.sum(spareKeys, (k) => +d[k])
-    })
+    // datum.forEach((d) => {
+    //     if (dateParse != "") {
+    //       if (typeof d[xVar] === "string") {
+    //         d[xVar] = dateParse(d[xVar])
+    //       }
+    //     }
+    //     spareKeys.forEach((key, i) => {
+    //       d[key] = +d[key]
+    //     })
+    //     // d.Total = d3.sum(spareKeys, (k) => +d[k])
+    // })
    
     let xRange
     if (timeInterval != "") {
@@ -228,6 +228,8 @@ export default class Stackedbar {
       return !(i % tickDivisor)
     })
     
+    console.log("ticks",ticks)
+
     if (isMobile) {
       ticks = x.domain().filter(function (d, i) {
         return !(i % 20)

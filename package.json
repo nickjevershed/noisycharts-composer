@@ -23,6 +23,7 @@
 	"dependencies": {
 		"carbon-components-svelte": "^0.85.2",
 		"d3": "^7.9.0",
+		"newsroom-dojo": "^1.2.5",
 		"papaparse": "^5.4.1",
 		"sass": "^1.79.5",
 		"scss": "^0.2.4",

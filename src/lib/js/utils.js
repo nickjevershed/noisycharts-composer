@@ -567,7 +567,7 @@ export function merge(to, from) {
       results.suggestedFormat = '%B %Y'; // month and year
     }
     else {
-      results.interval = timeDiff / ONE_YEAR;
+      results.interval = Math.round(timeDiff / ONE_YEAR);
       results.timescale = 'year';
       results.suggestedFormat = '%Y'; // year
     }
