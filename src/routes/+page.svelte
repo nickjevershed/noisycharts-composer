@@ -144,7 +144,7 @@
     import { checkData, parseDataInput, arrToJson, givePrompt } from "$lib/js/parseDataInput"
     import { checkDatasetShape, checkDataIsFormattedForChartType } from "$lib/js/checkDatasetShape"
     import { dragger } from '$lib/js/dragger';
-    import Sonic from "$lib/js/sonic"
+    import NoisyChart from "$lib/js/sonicV2"
     import Controls from '$lib/components/Controls.svelte'
     // load the json with an import statement
     import chartTypes from '$lib/data/chartTypes.json';
@@ -222,7 +222,7 @@
     let chartMaker = {}
     let supportedCharts = ['linechart', 'verticalbar', 'horizontalbar']
     let soundPalette = ['Kalimba', 'Cello']
-    let sonic = new Sonic
+    let sonic = null;
     let chartTheme = 'the-crunch'
     /**
      * @type {null}
@@ -457,6 +457,8 @@
           options.selectedInstruments[i] = {seriesName: series, instrument: "Kalimba"}
         })
   
+        sonic = new NoisyChart({settings:settings})
+
         // Set up synths and load samples
   
         loader = sonic.loadSynths(options)

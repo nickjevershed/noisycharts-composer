@@ -605,6 +605,10 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
     } // end setup
 
     
+    
+
+
+
     play(options, sonic) {
 
         
