@@ -65,24 +65,24 @@
             <div class="chartMaker" style="width: {width}px;">
               <div id="chartWrapper" class="container {chartTheme}" style="{cssVarStyles}">
                   <div class="row" id="furniture">
-                    <div class="chartTitle row" id="chartTitle"  style="font-size: {20 * settings.textScaling}px;"><span class="colouredTitle" bind:innerHTML={settings.title} contenteditable="true">{settings.title}</span> </div>
-                    {#if settings.subtitle}
-                    <div class="subTitle row" id="subTitle" style="font-size: {16 * settings.textScaling}px;" contenteditable="true">{settings.subtitle}</div>
+                    <div class="chartTitle row" id="chartTitle"  style="font-size: {20 * chartSettings.textScaling}px;"><span class="colouredTitle" bind:innerHTML={chartSettings.title} contenteditable="true">{chartSettings.title}</span> </div>
+                    {#if chartSettings.subtitle}
+                    <div class="subTitle row" id="subTitle" style="font-size: {16 * chartSettings.textScaling}px;" contenteditable="true">{chartSettings.subtitle}</div>
                     {/if}
-                    {#if settings.chartKey}
+                    {#if chartSettings.chartKey}
                     <div id="chartKey"></div>
                     {/if}
                   </div>
                 {#if chartType}
                     <div id="chartContainer"  style="width: {width}px; height:{chartHeight}px;">
               
-                        <div id="positionCounter" draggable="true" class="draggable {settings.positionCounter ? 'show' : 'hide'}" >
-                          <div id="positionCounterTitle" style="font-size: {12 * settings.textScaling}px;"></div>
-                          <div id="positionCounterValue" class="noto" style="font-size: {20 * settings.textScaling}px;"></div>
+                        <div id="positionCounter" draggable="true" class="draggable {chartSettings.positionCounter ? 'show' : 'hide'}" >
+                          <div id="positionCounterTitle" style="font-size: {12 * chartSettings.textScaling}px;"></div>
+                          <div id="positionCounterValue" class="noto" style="font-size: {20 * chartSettings.textScaling}px;"></div>
                         </div>
             
                       <svg width={width} height={chartHeight} id="chart" overflow="hidden">
-                        <g transform="translate({settings.marginleft},{settings.margintop})" id="features"></g>
+                        <g transform="translate({chartSettings.marginleft},{chartSettings.margintop})" id="features"></g>
                       </svg>
                     </div>
   
@@ -91,7 +91,7 @@
                   {/if}
                   <div class="row footer" id="footer">
                     <div class="sourceText">
-                      {#if watermark}<span>A <b>noisychart</b> by @nickevershed </span>{/if}{#if settings.source}Source: <span id="sourceText" contenteditable="true">{settings.source}</span>{/if}
+                      {#if watermark}<span>A <b>noisychart</b> by @nickevershed </span>{/if}{#if chartSettings.source}Source: <span id="sourceText" contenteditable="true">{chartSettings.source}</span>{/if}
                     </div>
                   </div>     
                 </div>
@@ -116,7 +116,7 @@
               
             </Column>
           </Row>
-          <Controls bind:options loadInstruments={loadInstruments} bind:settings setDimensions={setDimensions} reRenderChart={reRenderChart} bind:chartTheme changeStyle={changeStyle} bind:customBackground />
+          <Controls bind:noisyChartSettings loadInstruments={loadInstruments} bind:chartSettings setDimensions={setDimensions} reRenderChart={reRenderChart} bind:chartTheme changeStyle={changeStyle} bind:customBackground />
         {/if}
       </Grid>
     </Content>
@@ -138,7 +138,7 @@
     } from "carbon-components-svelte";
     import { onMount } from 'svelte';
     import { schema } from 'newsroom-dojo';
-    import { getJson, merge, config, analyseTime } from '$lib/js/utils';
+    import { getJson, merge, config, analyseTime, getDuration } from '$lib/js/utils';
     import { setDefaults } from "$lib/js/setDefaults";
     import { convertData } from "$lib/js/convertData";
     import { checkData, parseDataInput, arrToJson, givePrompt } from "$lib/js/parseDataInput"
@@ -189,7 +189,7 @@
     let statusMessage = "Waiting to load chart..."
     let loader = false
     let watermark = false
-    let settings = {"title":"This is a headline", 
+    let chartSettings = {"title":"This is a headline", 
                   "subtitle":"This is a subtitle", 
                   "source":"The source text",
                   "margintop":10, 
@@ -209,7 +209,7 @@
     }
 
     // Because we still support the legacy google sheets json output data format, each object like settings etc needs to be the first element of an array
-    chartData.sheets['template'] = [settings]
+    chartData.sheets['template'] = [chartSettings]
 
     let chartDataTypes = []
     let activeCharts = chartTypes.filter(d => d.noisycharts_supported)
@@ -224,19 +224,20 @@
     let soundPalette = ['Kalimba', 'Cello']
     let sonic = null;
     let chartTheme = 'the-crunch'
+    let firstSynthLoad = false
     /**
      * @type {null}
      */
     let customBackground = null
-    $: axisText = 14 * settings.textScaling
-    $: footerText = 12 * settings.textScaling
-    $: axisPad = 12 * settings.textScaling
-    $: lineStroke = Math.max(2 * settings.textScaling, 4)
+    $: axisText = 14 * chartSettings.textScaling
+    $: footerText = 12 * chartSettings.textScaling
+    $: axisPad = 12 * chartSettings.textScaling
+    $: lineStroke = Math.max(2 * chartSettings.textScaling, 4)
     $: cssVarStyles = `--axis-text:${axisText}px;--axis-pad:${axisPad}px;--footer-text:${footerText}px;--line-stroke:${lineStroke}px;background-image: url("${customBackground}");background-size: cover;`;
     
     // Sonification and animation option object, linked to the svelte controls. Should probably rename to avoid confusion with the options object used by charts
     
-    let options = {
+    let noisyChartSettings = {
       audioRendering: "discrete",
       chartMode:'no voiceover',
       duration: 5,
@@ -286,8 +287,8 @@
       for (const col of chartDataTypes.type) {
 
         if (col.list[0] == "date") {
-          settings.dateFormat = col.format
-          // settings.xAxisDateFormat = col.format
+          chartSettings.dateFormat = col.format
+          // chartSettings.xAxisDateFormat = col.format
           break
         }
 
@@ -375,7 +376,7 @@
           chartData = results
           let chartType = results['sheets']['chartId'][0]['type']
           let chartSettings = {chart: activeCharts.filter((d) => d.type === chartType)[0]}
-          options = setDefaults(chartData, options)
+          // noisyChartSettings = setDefaults(chartData, noisyChartSettings)
           createChart(chartSettings, 'yachtURL')
 
         });
@@ -396,9 +397,9 @@
       if (supportedCharts.includes(chartType)) {
   
         if (chartType == "horizontalbar") {
-          options.audioRendering = "categorical"
-          settings.positionCounter = false
-          // options.invertAudio = true
+          noisyChartSettings.audioRendering = "categorical"
+          chartSettings.positionCounter = false
+          // noisyChartSettings.invertAudio = true
         }
   
         // Gets the default settings for each chart from a json file
@@ -414,60 +415,65 @@
 
         // Parsing the settings from the merged object into a single settings object, converting things etc
   
-        settings = config(merged.sheets)
+        chartSettings = config(merged.sheets)
   
-        console.log("settings1", settings)
+        console.log("settings1", chartSettings)
 
-        let dataSchema = schema(settings.data);
+        let dataSchema = schema(chartSettings.data);
         
-        convertData(settings.data, settings)
+        convertData(chartSettings.data, chartSettings)
 
         // console.log("convertedData", settings.data)
         // dateformat has been set so lets work out a good default interval etc
 
-        if (settings.dateFormat != "") {
-          let dateTimeResults = analyseTime(settings.data, settings)
+        if (chartSettings.dateFormat != "") {
+          let dateTimeResults = analyseTime(chartSettings.data, chartSettings)
           console.log(dateTimeResults)
-          options.interval = String(dateTimeResults.interval) + " " + dateTimeResults.timescale
-          settings.xAxisDateFormat = dateTimeResults.suggestedFormat
+          noisyChartSettings.interval = String(dateTimeResults.interval) + " " + dateTimeResults.timescale
+          chartSettings.xAxisDateFormat = dateTimeResults.suggestedFormat
         }
 
         // Resize as needed, tell all the things what to do
   
         let furnitureHeight = document.querySelector("#furniture").getBoundingClientRect().height + document.querySelector("#footer").getBoundingClientRect().height
         chartHeight = height - furnitureHeight
-        settings.width = width
-        settings.height = chartHeight
-        settings.chartKey = true
-        // settings.positionCounter = true
-        settings.textScaling = 1
+        chartSettings.width = width
+        chartSettings.height = chartHeight
+        chartSettings.chartKey = true
+        // chartSettings.positionCounter = true
+        chartSettings.textScaling = 1
 
         // settings.timeClick = 10
         // If no color scheme set by user for the chart and no userkey set, then use the color scheme selected
   
-        if (settings.colorScheme == "" && settings.userkey.length == 0) {
-          settings.colorScheme = chartTheme
+        if (chartSettings.colorScheme == "" && chartSettings.userkey.length == 0) {
+          chartSettings.colorScheme = chartTheme
         }
   
         // Make an instrument per data series, like a color palette
   
-        let dataSeries = settings.keys.slice(1)
+        let dataSeries = chartSettings.keys.slice(1)
   
         dataSeries.forEach((series,i) => {
-          options.selectedInstruments[i] = {seriesName: series, instrument: "Kalimba"}
+          noisyChartSettings.selectedInstruments[i] = {seriesName: series, instrument: "Kalimba"}
         })
   
-        sonic = new NoisyChart({settings:settings})
-
+        noisyChartSettings.note = getDuration(chartSettings.data)
+        console.log("note",noisyChartSettings.note)
+        sonic = new NoisyChart({chartSettings:chartSettings, noisyChartSettings:noisyChartSettings})
+        sonic.setupSonicData(chartSettings.data)
         // Set up synths and load samples
   
-        loader = sonic.loadSynths(options)
+        loader = sonic.loadSynths(noisyChartSettings)
   
         // Render the chart by importing the specified chart module
   
         import(`$lib/js/${chartType}.js`).then((chartModule) => {   
-            chartMaker = new chartModule.default(settings)
+            chartMaker = new chartModule.default(chartSettings)
             chartMaker.render()
+            // sonic.test(chartMaker.test)
+            sonic.setAnimateCircle(chartMaker.makeCircle)
+            sonic.setAnimateDiscrete(chartMaker.animateDiscrete)
             
             let draggies = document.querySelectorAll(".draggable");
             draggies.forEach(item => {
@@ -483,27 +489,31 @@
     } // end setupChart
   
     function playChart() {
-      // console.log("Options", options)
-      chartMaker.play(options, sonic)
+      // console.log("noisyChartSettings", noisyChartSettings)
+      // chartMaker.play(noisyChartSettings, sonic)
+
+
+      chartMaker.resetAnimation(noisyChartSettings)
+      sonic.playPause()
     }
   
     function exportAudio() {
-      // console.log("Options", options)
-      chartMaker.play(options, sonic)
+      // console.log("noisyChartSettings", noisyChartSettings)
+      chartMaker.play(noisyChartSettings, sonic)
     }
   
     function loadInstruments(event) {
       if (event) {
-        loader = sonic.loadSynths(options)
+        loader = sonic.loadSynths(noisyChartSettings)
       }
     }
   
     function changeStyle(event) {
       console.log("changeStyle")
-      if (settings.userkey.length == 0) {
+      if (chartSettings.userkey.length == 0) {
         console.log(chartTheme)
-        settings.colorScheme = chartTheme
-        chartMaker.render(settings)
+        chartSettings.colorScheme = chartTheme
+        chartMaker.render(chartSettings)
         
         // if (chartTheme == "the-crunch") {
         //   customBackground = "https://interactive.guim.co.uk/embed/aus/2023/texture-looped.gif"
@@ -518,29 +528,29 @@
         width = Number(value.split(",")[0])
         height = Number(value.split(",")[1])
         let ratio = width / 620
-        settings.textScaling = ratio
-        settings.marginbottom = settings.marginbottom * ratio
-        settings.marginleft = settings.marginleft * ratio
-        settings.marginright = settings.marginright * ratio
-        settings.margintop = settings.margintop * ratio
+        chartSettings.textScaling = ratio
+        chartSettings.marginbottom = chartSettings.marginbottom * ratio
+        chartSettings.marginleft = chartSettings.marginleft * ratio
+        chartSettings.marginright = chartSettings.marginright * ratio
+        chartSettings.margintop = chartSettings.margintop * ratio
   
         console.log("ratio", ratio)
         setTimeout(() => {
           let furnitureHeight = document.querySelector("#furniture").getBoundingClientRect().height + document.querySelector("#footer").getBoundingClientRect().height
           console.log("furny height", furnitureHeight)
           chartHeight = height - furnitureHeight
-          settings.width = width
-          settings.height = chartHeight
-          // settings.width = width
-          // settings.height = height
-          chartMaker.render(settings)
+          chartSettings.width = width
+          chartSettings.height = chartHeight
+          // chartSettings.width = width
+          // chartSettings.height = height
+          chartMaker.render(chartSettings)
         },500)
         
       }
     } 
     
     function reRenderChart() {
-      chartMaker.render(settings)
+      chartMaker.render(chartSettings)
     }
   
   </script>

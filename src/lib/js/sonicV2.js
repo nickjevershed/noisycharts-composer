@@ -1,9 +1,9 @@
 // import * as d3 from 'd3' // You can replace with only d3-scale and d3-array if you're not already using d3 for your charts
 // import notes from './notes.json';
 
-import * as tone from 'tone'
+import * as Tone from 'tone'
 import * as d3 from 'd3' 
-import { numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './utils'
+import { xvarFormatSpeech, numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './utils'
 import instruments from '$lib/data/instruments.json';
 import notes from '$lib/data/notes.json';
 import { browser } from '$app/environment';
@@ -75,10 +75,10 @@ const default_settings = {
 
 class NoisyChart {
   
-    constructor({settings=default_settings,dataKeys=[], animationID=null, x=null, y=null, colors=default_colors}) {
+    constructor({chartSettings=default_settings, noisyChartSettings=null, dataKeys=[], animationID=null, x=null, y=null, colors=default_colors}) {
 
       // sets the destination for audio output, either speakers: tone.Destination or recorder
-        this.destination = tone.Destination
+        this.destination = Tone.Destination
 
         // This array will hold all of our synths
         this.synths = []
@@ -91,8 +91,9 @@ class NoisyChart {
 
         this.xTimeClicks = []
 
-        this.settings = settings
-        this.data = settings.data
+        this.settings = chartSettings
+        this.options = noisyChartSettings
+        this.data = chartSettings.data
         
         // Playback and cursoring stuff
         this.currentKey = null
@@ -100,7 +101,7 @@ class NoisyChart {
         this.isPlaying = false
         this.inProgress = false
 
-        this.note = settings.note
+        this.note = noisyChartSettings.note
         
         this.sonicData = {}
 
@@ -117,9 +118,14 @@ class NoisyChart {
         this.furniturePlaying = false
         this.furniturePaused = false
         this.usedCursor = false
-        this.audioRendering = 'discrete'
+        this.audioRendering = this.options.audioRendering
         this.keys = dataKeys
         this.interactionAdded = false
+
+        this.animateCircle = null
+        this.animateDiscrete = null
+
+        this.chartID = 'chart'
 
         // Musical note frequencies
         this.notes = []
@@ -135,10 +141,18 @@ class NoisyChart {
 
   }
 
+  setAnimateCircle(animateCircle) {
+    this.animateCircle = animateCircle
+  }
+
+  setAnimateDiscrete(animateDiscrete) {
+    this.animateDiscrete = animateDiscrete
+  }
+
   async loadSynths(options) {
     console.log("Loading synths...")
     
-    tone.start()
+    Tone.start()
     
     // Setup for dynamic panning
     let pannerRange = [-0.75,0.75]
@@ -153,9 +167,9 @@ class NoisyChart {
 
     console.log("pan domain",pannerScale.range())    
 
-    this.kickDrum = new tone.MembraneSynth().connect(this.destination);
+    this.kickDrum = new Tone.MembraneSynth().connect(this.destination);
 
-    this.click = new tone.Synth(clickSettings).connect(this.destination);
+    this.click = new Tone.Synth(clickSettings).connect(this.destination);
 
     // this.kickDrum.triggerAttackRelease("C2", "16n")  
     // Loop through the instruments object and make a synth object for each one in this.synths
@@ -173,10 +187,10 @@ class NoisyChart {
       console.log("pan value", pannerScale(i))
       // IF not a sample, update array of synths with a new synth object
 
-      let panner = new tone.Panner(pannerScale(i)).connect(this.destination);
+      let panner = new Tone.Panner(pannerScale(i)).connect(this.destination);
 
       if (synthType != "Sampler" && synthType != "Player") {
-          let newSynth = new tone[synthType](synthPreset)
+          let newSynth = new Tone[synthType](synthPreset)
           newSynth.connect(panner);
           this.synths[i] = newSynth
           return true
@@ -196,7 +210,7 @@ class NoisyChart {
               console.log("samples loaded")
               return true
               }
-            let newSynth = new tone[synthType](synthPreset)
+            let newSynth = new Tone[synthType](synthPreset)
             newSynth.connect(panner);
             this.synths[i] = newSynth 
           }
@@ -243,7 +257,7 @@ class NoisyChart {
 
     }) 
 
-
+    // this.beep(500)
 
   } // end loadSynth
   
@@ -320,6 +334,7 @@ class NoisyChart {
 
   setupSonicData(data, keys = [], exclude = []) {
     console.log("Setting up data and synth")
+    console.log("data",data)
     let self = this
     
     const xFormat = this.settings.xFormat
@@ -417,18 +432,15 @@ class NoisyChart {
 
     // Setting the scale range for linear scale
 
-    let range = [self.settings.low,self.settings.high]
-
+    let range = [self.options.low,self.options.high]
 
     // console.log("allDataValues", allDataValues)
     // console.log("sonicData", self.sonicData)
     // console.log("highestVal", self.highestVal)
     // console.log("lowestVal", self.lowestVal)
   
-    self.domainY = d3.extent(allDataValues)
-    self.domainX = d3.extent(data, d => d[self.xVar])
-
-
+    self.settings.domainY = d3.extent(allDataValues)
+    self.settings.domainX = d3.extent(data, d => d[self.xVar])
 
     // Invert if needed
     // ranked charts use inverted scale, eg bird of the year
@@ -441,39 +453,39 @@ class NoisyChart {
     }
     // console.log(scaleLinear())
     // console.log("range", range, "domain", self.domainY)
+    
     self.scale = d3.scaleLinear()
-      .domain(self.domainY)
+      .domain(self.settings.domainY)
       .range(range)
-
 
     // If we're clamping the scale to musical notes, use a range of actual frequency values
     
-        if (options.scaleNotes) {
-          let bottom = this.notes.findIndex(e => e == options.low)
-          let top = this.notes.findIndex(e => e == options.high)
+        if (self.settings.scaleNotes) {
+          let bottom = this.notes.findIndex(e => e == self.settings.low)
+          let top = this.notes.findIndex(e => e == self.settings.high)
           range = this.notes.slice(bottom, top + 1)
     
-          if (options.invertAudio) {
+          if (self.settings.invertAudio) {
             range = range.reverse()
           }
     
         }
-        console.log("range", range)
-        let scale = null 
+        // console.log("range", range)
+        // let scale = null 
         
         // If we're using a scale of discrete notes, use scaleQuantize
     
-        if (options.scaleNotes) {
-          scale = d3.scaleQuantize()
-            .domain(domainY)
+        if (self.settings.scaleNotes) {
+          self.scale = d3.scaleQuantize()
+            .domain(self.settings.domainY)
             .range(range)
         }
     
         // Otherwise default to linear
     
         else {
-          scale = d3.scaleLinear()
-          .domain(domainY)
+          self.scale = d3.scaleLinear()
+          .domain(self.settings.domainY)
           .range(range)
         }
 
@@ -485,9 +497,12 @@ class NoisyChart {
     return new Promise(async (resolve, reject) => {
       let self = this
       let keyIndex = self.dataKeys.indexOf(dataKey)
+      console.log("keyIndex", keyIndex)
+      console.log("note", self.note)
       // let halfway = self.sonicData[dataKey]
-      // console.log(`Setting up the transport for ${dataKey}`)
+      console.log(`Setting up the transport for ${dataKey}`)
       // Clear the transport
+      console.log("audioRendering",self.audioRendering, self.synths[self.currentIndex])
       Tone.Transport.stop()
       Tone.Transport.cancel()
 
@@ -495,10 +510,12 @@ class NoisyChart {
       // syncs the synth to the transport
 
       if (self.audioRendering == "discrete") {  
-        self.synth.sync()
+        console.log('yehhhhhhhhh')
+        self.synths[self.currentIndex].sync()
         self.click.sync()
       }
 
+      
       let data = self.sonicData[dataKey]
 
       // Check if the cursor has been used, slice to the current position
@@ -513,20 +530,22 @@ class NoisyChart {
         self.currentKey = dataKey
         
         if (self.audioRendering == "discrete") {
-          
+            
             if (d[dataKey]) {
-              self.synth.triggerAttackRelease(self.scale(d[dataKey]), self.note, self.note * i)
+                self.synths[self.currentIndex].triggerAttackRelease(self.scale(d[dataKey]), self.note, self.note * i)
             }
             
             else {
               self.click.triggerAttackRelease(440, self.note, self.note * i)
             }
 
-            Tone.Transport.schedule(function(){
+
+
+            Tone.Transport.schedule(function() {
               self.currentIndex = d.sonic_index
-              if (self.animationID) {
+              if (self.options.animationStyle == 'playthrough') {
                 if (d[dataKey]) {
-                  self.animateCursor(dataKey,d.sonic_index, null)
+                  self.animateDiscrete(self.note, dataKey, d.sonic_index, data.length)
                 }
               }
               // console.log(self.currentIndex)
@@ -536,12 +555,12 @@ class NoisyChart {
         else if (self.audioRendering == "continuous") {
           // console.log("making continuous noise")
           if (i == 0) { 
-            synth.triggerAttackRelease(self.scale(d[key]), data[dataKey].length * self.note)
+            self.synths[self.currentIndex].triggerAttackRelease(self.scale(d[key]), data[dataKey].length * self.note)
             // animateCont(key)
           }
           else {
               Tone.Transport.schedule(function(){
-              self.synth.frequency.rampTo(scale(d[dataKey]), self.note);
+                self.synths[self.currentIndex].frequency.rampTo(self.scale(d[dataKey]), self.note);
               }, i * self.note);
           }
         }  
@@ -558,21 +577,21 @@ class NoisyChart {
             let thing2 = await self.beep(self.scale(d[dataKey]))
         }
     
-    }
+      }
 
-    // Reads out the middle X value halfway through the series
+      // Reads out the middle X value halfway through the series
 
-    // let halfway = Math.floor(data.length / 2)
-    // Tone.Transport.schedule(function(){
-    //   console.log("the start")
-    //   self.speaker(xvarFormatSpeech(data[halfway][self.xVar], self.timeSettings.suggestedFormat))
-    // }, halfway * self.note);
+      // let halfway = Math.floor(data.length / 2)
+      // Tone.Transport.schedule(function(){
+      //   console.log("the start")
+      //   self.speaker(xvarFormatSpeech(data[halfway][self.xVar], self.timeSettings.suggestedFormat))
+      // }, halfway * self.note);
 
 
-      // resolve after the last note is played
+        // resolve after the last note is played
 
       Tone.Transport.schedule(function(){
-        // console.log("the end")
+        console.log("the end")
         // self.speaker(xvarFormatSpeech(data[data.length - 1][self.xVar], self.timeSettings.suggestedFormat))
         self.currentIndex = 0
         self.isPlaying = false
@@ -583,16 +602,18 @@ class NoisyChart {
 
       if (keyIndex === self.dataKeys.length -1) {
         Tone.Transport.schedule(function(){
-          // console.log("the actual end")
+          console.log("the actual end")
           self.inProgress = false
           self.usedCursor = false
           }, data.length * self.note);
       }
   
+      // console.log(Tone.Transport)
       Tone.Transport.position = "0:0:0"  
       Tone.Transport.start()
       self.inProgress = true
       self.isPlaying = true
+      console.log("blah")
     });
 
   }  
@@ -600,29 +621,33 @@ class NoisyChart {
  playFurniture = () => { 
     return new Promise((resolve, reject) => {
     let self = this
+    console.log("scale", self.scale.domain(), self.scale?.range())
     async function blah() {
 
       // uncomment to make testing synth / audio context faster  
       // await self.beep(440)    
       
-      let lowestY = self.domainY[0]
-      let highestY = self.domainY[1]
+      // This is what you're working on  
+
+      let lowestY = self.settings.domainY[0]
+      let highestY = self.settings.domainY[1]
 
       if ("invertY" in self.settings) {
         if (self.settings.invertY) {
-          lowestY = self.domainY[1]
-          highestY = self.domainY[0]
+          lowestY = self.settings.domainY[1]
+          highestY = self.settings.domainY[0]
         }
       }
   
-      let lowestX = self.domainX[0]
-      let highestX = self.domainX[1]
+      let lowestX = self.settings.domainX[0]
+      let highestX = self.settings.domainX[1]
 
       let lowestXStr = lowestX
       let highestXStr = highestX
-      if (self.settings.xFormat.date) {
-        lowestXStr = xvarFormatSpeech(self.domainX[0], self.timeSettings.suggestedFormat)
-        highestXStr = xvarFormatSpeech(self.domainX[1], self.timeSettings.suggestedFormat)
+
+      if (self.settings.cols[0].type == "date") {
+        lowestXStr = xvarFormatSpeech(lowestX , self.settings.xAxisDateFormat)
+        highestXStr = xvarFormatSpeech(highestX, self.settings.xAxisDateFormat)
       }
   
       let lowestYStr = lowestY
@@ -633,28 +658,44 @@ class NoisyChart {
       }
 
       self.furniturePlaying = true
-      const text1 = await self.speaker(`The lowest value on the chart is ${lowestYStr}, and it sounds like `)
-      if (self.animationID) {
+    
+    console.log("chart mode", self.options.chartMode)
+        
+    if (self.options.chartMode === "fully accessible") {
+        const text1 = await self.speaker(`The lowest value on the chart is ${lowestYStr}, and it sounds like `)
+        
+       
         self.animateCircle(self.lowestVal[self.xVar],self.lowestVal.value, self.lowestVal.key)
-      }
-      
-      const beep1 = await self.beep(self.scale(lowestY))        
-  
-      await timer(1200);
-  
-      const text2 = await self.speaker(`The highest value on the chart is ${highestYStr}, and it sounds like `)
-      if (self.animationID) {
-        self.animateCircle(self.highestVal[self.xVar],self.highestVal.value, self.highestVal.key)
-      }
+        
+        console.log("lowestY", lowestY, self.scale(lowestY))
 
-      const beep2 = await self.beep(self.scale(highestY))
-  
-      await timer(1200);
-  
-      if (self.audioRendering == "discrete" || self.audioRendering == "continuous") {
-        const text3 = await self.speaker(`Each note is a ${self.settings.interval}, and the chart goes from ${lowestXStr} to ${highestXStr}`)
-      }  
-      
+        const beep1 = await self.beep(self.scale(lowestY))        
+    
+        await timer(1200);
+    
+        const text2 = await self.speaker(`The highest value on the chart is ${highestYStr}, and it sounds like `)
+ 
+        self.animateCircle(self.highestVal[self.xVar],self.highestVal.value, self.highestVal.key)
+        
+        const beep2 = await self.beep(self.scale(highestY))
+    
+        await timer(1200);
+    
+        if (self.audioRendering == "discrete" || self.audioRendering == "continuous") {
+            const text3 = await self.speaker(`Each note is a ${self.settings.interval}, and the chart goes from ${lowestXStr} to ${highestXStr}`)
+        }  
+    } 
+
+    else if (self.options.chartMode === "human does voiceover") {
+        self.animateCircle(self.lowestVal[self.xVar],self.lowestVal.value, self.lowestVal.key)
+        const beep1 = await self.beep(self.scale(lowestY))        
+        await timer(1200);
+        
+        self.animateCircle(self.highestVal[self.xVar],self.highestVal.value, self.highestVal.key)
+        const beep2 = await self.beep(self.scale(highestY))
+        await timer(1200);
+    }    
+
       self.furniturePlaying = false
       resolve({ status : "success"})
       
@@ -667,9 +708,6 @@ class NoisyChart {
 
   async playPause() { 
     let self = this
-    if (!self.synthLoaded) {
-          self.setupSonicData(self.data, self.keys)
-    }
 
     // This needs to be here to make Safari work because of its strict autoplay policies
 
@@ -683,7 +721,8 @@ class NoisyChart {
     if (!self.runOnce && !self.inProgress && !self.furniturePlaying) {
       console.log("playing furniture")
       Tone.start()
-      self.synth.context.resume();
+      console.log("currentIndex", self.currentIndex, self.synths)
+      self.synths[self.currentIndex].context.resume();
       self.runOnce = true
       // self.inProgress = true
       
@@ -766,9 +805,7 @@ class NoisyChart {
   async moveCursor(direction) {
 
     let self = this
-    if (!self.synthLoaded) {
-      self.setupSonicData(self.data, self.keys)
-    }
+
     self.usedCursor = true
     self.isPlaying = false
     self.inProgress = true
@@ -821,9 +858,7 @@ class NoisyChart {
 
   moveSeries(direction) {
     let self = this
-    if (!self.synthLoaded) {
-      self.setupSonicData(self.data, self.keys)
-    }
+
     self.usedCursor = true
     self.isPlaying = false
     self.inProgress = true
@@ -882,10 +917,6 @@ class NoisyChart {
 
     // Check if synth stuff has been setup yet, if not set it up once
 
-    if (!self.synthLoaded) {
-      self.setupSonicData(self.data, self.keys)
-    }
-
     if (e.code === "Space") {
       this.playPause()
     }
@@ -931,11 +962,11 @@ class NoisyChart {
 
         // Loads Tone on a click so we don't get annoying audio API errors
 
-        chart.addEventListener('click', (e) => {
-          if (!self.synthLoaded) {
-            self.setupSonicData(self.data, self.keys)
-          }
-        })
+        // chart.addEventListener('click', (e) => {
+        //   if (!self.synthLoaded) {
+        //     self.setupSonicData(self.data, self.keys)
+        //   }
+        // })
 
         // Set up the hotkey / keyboard shortcut listeners
 
@@ -996,67 +1027,67 @@ class NoisyChart {
   
   }  
 
-  animateCursor(key, i, len) {
+//   animateCursor(key, i, len) {
 
-    let self = this
-    let data = self.sonicData[key]
-    let chartType = self.settings.type
-    // console.log(self.x)
+//     let self = this
+//     let data = self.sonicData[key]
+//     let chartType = self.settings.type
+//     // console.log(self.x)
 
-    let y = self.y(data[i][key])
-    let x = self.x(data[i][self.xVar])
+//     let y = self.y(data[i][key])
+//     let x = self.x(data[i][self.xVar])
 
-    if (chartType == 'horizontalbar') {
-      y = self.y(data[i][self.xVar])
-      x = self.x(data[i][key])
-    }
+//     if (chartType == 'horizontalbar') {
+//       y = self.y(data[i][self.xVar])
+//       x = self.x(data[i][key])
+//     }
     
-    select(`#${self.animationID}`)
-        .append("circle")
-        .attr("cy", y + self.yBand / 2)
-        .attr("fill", self.colors(key))
-        .attr("cx", x + self.xBand / 2)
-        .attr("r", 0)
-        .style("opacity", 1)
-        .transition()
-        .duration(300)
-        .attr("r",40)
-        .style("opacity",0)
-        .remove()
+//     d3.select(`#${self.chartID}`)
+//         .append("circle")
+//         .attr("cy", y + self.yBand / 2)
+//         .attr("fill", self.colors(key))
+//         .attr("cx", x + self.xBand / 2)
+//         .attr("r", 0)
+//         .style("opacity", 1)
+//         .transition()
+//         .duration(300)
+//         .attr("r",40)
+//         .style("opacity",0)
+//         .remove()
   
-  }
+//   }
 
-  animateCircle(cx, cy, key=null) {
-    // console.log("cx", cx, "cy", cy)
-    let self = this
-    let chartType = self.settings.type
-    if (!key) {
-      key = self.currentKey
-    }
+//   animateCircle(cx, cy, key=null) {
+//     // console.log("cx", cx, "cy", cy)
+//     let self = this
+//     let chartType = self.settings.type
+//     if (!key) {
+//       key = self.currentKey
+//     }
 
-    let y = cy
-    let x = cx
+//     let y = cy
+//     let x = cx
 
-    if (chartType == 'horizontalbar') {
-      y = cx
-      x = cy
-    }
+//     if (chartType == 'horizontalbar') {
+//       y = cx
+//       x = cy
+//     }
 
-    select(`#${self.animationID}`)
-        .append("circle")
-        .attr("cy", self.y(y) + self.yBand / 2)
-        .attr("fill", self.colors(key))
-        .attr("cx", self.x(x) + self.xBand / 2)
-        .attr("r", 0)
-        .style("opacity", 1)
-        .transition()
-          .duration(300)
-          .attr("r",40)
-          .style("opacity",0)
-          .remove()
+//     d3.select(`#${self.chartID}`)
+//         .append("circle")
+//         .attr("cy", self.y(y) + self.yBand / 2)
+//         .attr("fill", self.colors(key))
+//         .attr("cx", self.x(x) + self.xBand / 2)
+//         .attr("r", 0)
+//         .style("opacity", 1)
+//         .transition()
+//           .duration(300)
+//           .attr("r",40)
+//           .style("opacity",0)
+//           .remove()
   
 
-  }
+//   }
 
 
 }

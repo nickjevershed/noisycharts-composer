@@ -576,3 +576,90 @@ export function merge(to, from) {
   
   }
   
+  function yearText(year) {
+
+    if (year.length !=4) {
+      console.log("Error, not a year string")
+      return year
+    } 
+  
+    else {
+      let partOne = year.slice(0,2)
+      let partTwo = year.slice(2,4)
+      let checkZero = year.slice(2,3)
+  
+      if (year != "2000" && partTwo == "00") {
+        
+        partTwo = "hundred"
+      }
+  
+      else if (year == "2000") {
+        partOne = "two thousand"
+        partTwo  = ""
+      }
+  
+      else if (checkZero == "0") {
+  
+        let lastNum = year.slice(3,4)
+        partTwo = "oh " + lastNum
+      }
+  
+      return `${partOne} ${partTwo}`
+    }	
+    
+  }
+  
+  export function xvarFormatSpeech(xVar, format) {
+    // check for date objects
+    // console.log(xVar, format)
+    if (typeof xVar == "object") {
+      
+      let timeFormatter = d3.timeFormat(format)
+      let result = timeFormatter(xVar)
+      if (format == "%Y") {
+        result = yearText(result)
+      }
+      return result
+    }
+    
+    else {
+      return xVar
+    }
+  
+  }
+
+  // Sets the note duration to fit an overall duration for playing back a data series
+
+  export function getDuration(data) {
+
+    let rowLength = data.length
+    let dataCols = Object.keys(data[0]).slice(1)
+    let numberCols = dataCols.length
+    let dataLength = rowLength * numberCols
+  
+    console.log("dataLength", dataLength)
+    let targetDuration = 20
+    let note = 0.20
+    // console.log("full length at 0.20", note * dataLength)
+    if ((note * dataLength) <=  targetDuration) {
+      // return {"note":note, "audioRendering":"discrete"}
+      return note
+    }
+  
+    if ((note * dataLength) > targetDuration) {
+      note = 0.1
+    }
+  
+    if ((note * dataLength) <=  targetDuration) {
+      // return {"note":note, "audioRendering":"discrete"}
+      return note
+    }
+  
+    else {
+      note = targetDuration / dataLength
+      // TBC: set audioRendering to continuous for very long datasets. requires testing
+      // return {"note":note, "audioRendering":"discrete"}
+      return note
+    }
+  
+  }

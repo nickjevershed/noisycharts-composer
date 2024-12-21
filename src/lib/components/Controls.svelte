@@ -14,7 +14,7 @@
   import instruments from '$lib/data/instruments.json';
   import notes from '$lib/data/notes.json';
   import sizePresets from '$lib/data/sizes.json';
-  export let options, loadInstruments, settings, setDimensions, reRenderChart, chartTheme, changeStyle, customBackground;
+  export let noisyChartSettings, loadInstruments, chartSettings, setDimensions, reRenderChart, chartTheme, changeStyle, customBackground;
 </script>
 
 <Row>
@@ -24,24 +24,24 @@
       <h3>Audio and duration</h3>
       <Row>
         <Column>
-          <Select labelText="Voiceover mode" bind:selected={options.chartMode} >
+          <Select labelText="Voiceover mode" bind:selected={noisyChartSettings.chartMode} >
               <SelectItem value="fully accessible" text="fully accessible" />
               <SelectItem value="human does voiceover" text="human does voiceover" />
               <SelectItem value="no voiceover" text="no voiceover" />
           </Select> 
         </Column>
         <Column>
-        <Slider bind:value={options.duration} min={2} max={40} labelText="Duration (sec)"/>
+        <Slider bind:value={noisyChartSettings.duration} min={2} max={40} labelText="Duration (sec)"/>
         </Column>
         <Column>
-        <Select inline labelText="Lowest note" bind:selected={options.low} >
+        <Select inline labelText="Lowest note" bind:selected={noisyChartSettings.low} >
           {#each notes as note}
             <SelectItem value={note.Frequency} text={note.Text} />
           {/each}
         </Select> 
         </Column>
         <Column>
-        <Select inline labelText="Highest note" bind:selected={options.high} >
+        <Select inline labelText="Highest note" bind:selected={noisyChartSettings.high} >
           {#each notes as note}
             <SelectItem value={note.Frequency} text={note.Text} />
           {/each}
@@ -52,26 +52,26 @@
 
       <Row>
         <Column>
-          <Select labelText="Audio rendering" bind:selected={options.audioRendering} >
+          <Select labelText="Audio rendering" bind:selected={noisyChartSettings.audioRendering} >
             <SelectItem value="discrete" text="Discrete/staccato" />
             <SelectItem value="categorical" text="Categorical" />
             <SelectItem value="continuous" text="Continuous/legato" />
           </Select> 
         </Column>
         <Column>
-          <RadioButtonGroup legendText="Play sequentially or simultaneously" bind:selected={options.simultaneous}>
+          <RadioButtonGroup legendText="Play sequentially or simultaneously" bind:selected={noisyChartSettings.simultaneous}>
             <RadioButton labelText="Sequential" value={false} />
             <RadioButton labelText="Simultaneous" value={true} />
           </RadioButtonGroup>
         </Column>
         <Column>
-          <RadioButtonGroup legendText="Invert audio scale" bind:selected={options.invertAudio}>
+          <RadioButtonGroup legendText="Invert audio scale" bind:selected={noisyChartSettings.invertAudio}>
             <RadioButton labelText="No" value={false} />
             <RadioButton labelText="Yes" value={true} />
           </RadioButtonGroup>
         </Column>
         <Column>
-          <RadioButtonGroup legendText="Scale to notes" bind:selected={options.scaleNotes}>
+          <RadioButtonGroup legendText="Scale to notes" bind:selected={noisyChartSettings.scaleNotes}>
             <RadioButton labelText="No" value={false} />
             <RadioButton labelText="Yes" value={true} />
           </RadioButtonGroup>
@@ -80,26 +80,26 @@
 
       <Row>
         <Column>
-          <RadioButtonGroup legendText="Enable x axis cues" bind:selected={options.timeClickEnabled}>
+          <RadioButtonGroup legendText="Enable x axis cues" bind:selected={noisyChartSettings.timeClickEnabled}>
             <RadioButton labelText="No" value={false} />
             <RadioButton labelText="Yes" value={true} />
           </RadioButtonGroup>
         </Column>
         <Column>
-          {#if options.timeClickEnabled}
-          <Slider bind:value={options.timeClick} min={2} max={100} labelText="Kick every N values"/>
+          {#if noisyChartSettings.timeClickEnabled}
+          <Slider bind:value={noisyChartSettings.timeClick} min={2} max={100} labelText="Kick every N values"/>
           {/if}
         </Column>
         <Column>
      
-          <TextInput placeholder="" bind:value={options.interval} labelText="Each note is a:"/>
+          <TextInput placeholder="" bind:value={noisyChartSettings.interval} labelText="Each note is a:"/>
         
         </Column>
       </Row>
 
       <h3>Instruments</h3>
       <Row>
-      {#each options.selectedInstruments as selectedInstrument}  
+      {#each noisyChartSettings.selectedInstruments as selectedInstrument}  
       <Column>
         <Select inline labelText="{selectedInstrument.seriesName}" on:change={loadInstruments} bind:selected={selectedInstrument.instrument}>
           {#each Object.keys(instruments) as instrument}
@@ -124,7 +124,7 @@
             min={1}
             max={5}
             step={0.1}
-            bind:value={settings.textScaling}
+            bind:value={chartSettings.textScaling}
             invalidText="Number must be between 1 and 5"
             label="Text scaling"
             on:input={reRenderChart}
@@ -136,7 +136,7 @@
           <NumberInput
             min={0}
             max={200}
-            bind:value={settings.marginleft}
+            bind:value={chartSettings.marginleft}
             invalidText="Number must be between 0 and 200"
             label="Margin left"
             on:input={reRenderChart}
@@ -146,7 +146,7 @@
           <NumberInput
             min={0}
             max={200}
-            bind:value={settings.marginright}
+            bind:value={chartSettings.marginright}
             invalidText="Number must be between 0 and 200"
             label="Margin right"
             on:input={reRenderChart}
@@ -156,7 +156,7 @@
           <NumberInput
             min={0}
             max={200}
-            bind:value={settings.margintop}
+            bind:value={chartSettings.margintop}
             invalidText="Number must be between 0 and 200"
             label="Margin top"
             on:input={reRenderChart}
@@ -166,7 +166,7 @@
           <NumberInput
             min={0}
             max={200}
-            bind:value={settings.marginbottom}
+            bind:value={chartSettings.marginbottom}
             invalidText="Number must be between 0 and 200"
             label="Margin bottom"
             on:input={reRenderChart}
@@ -195,7 +195,7 @@
       <h3>Annotations and labels</h3>
       <Row>
         <Column>
-        <RadioButtonGroup legendText="Position ticker" bind:selected={settings.positionCounter}>
+        <RadioButtonGroup legendText="Position ticker" bind:selected={chartSettings.positionCounter}>
           <RadioButton labelText="On" value={true} />
           <RadioButton labelText="Off" value={false} />
         </RadioButtonGroup>
@@ -205,7 +205,7 @@
       <h3>Animation</h3>
       <Row>
         <Column>
-          <Select labelText="Animation style" bind:selected={options.animationStyle} >
+          <Select labelText="Animation style" bind:selected={noisyChartSettings.animationStyle} >
             <SelectItem value="playthrough" text="Play through" />
             <SelectItem value="static" text="Static" />
           </Select> 

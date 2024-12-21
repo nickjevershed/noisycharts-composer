@@ -583,6 +583,7 @@ export default class lineChart {
  
         this.x = x
         this.y = y
+        console.log("x", this.x)
         this.xVar = xVar
         this.domainY = d3.extent(chartValues)
         this.domainX = [xVarFormatterPosition(this.x.domain()[0]), xVarFormatterPosition(this.x.domain()[this.x.domain().length - 1])]
@@ -604,10 +605,82 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
 
     } // end setup
 
-    
-    
+    // test = () => {
+    //     console.log("test",this.x)
+    // }
 
 
+    animateDiscrete = (note, key, i, len) => {
+
+        const self = this
+        var note_sec = note * 1000
+        let idKey = makeSafe(key)
+        let currentClip = d3.select(`#${idKey}_clip rect`)
+
+        // Continous line with little circle pop-ins for discrete data
+        var pause = (i === 0) ?  0 : note
+        d3.select("#positionCounterValue")
+            .text(self.xVarFormatterPosition(self.data[i][self.xVar]))
+
+        d3.select("#features")
+            .append("circle")
+            .attr("cy", self.y(self.data[i][key]))
+            .attr("fill", self.colors.get(key))
+            .attr("cx", self.x(self.data[i][self.xVar]))
+            .attr("r", 0)
+            .style("opacity", 1)
+            .transition()
+            .duration(300)
+            .attr("r",40)
+            .style("opacity",0)
+            .remove()
+        
+            currentClip.transition()
+                .duration(note_sec)
+                .ease(d3.easeLinear)
+                .attr("width", self.x(self.data[i][self.xVar]))
+        
+            if (i == len - 1) {
+                console.log("yo")
+                currentClip.attr("width", self.width)
+                setTimeout(() => {
+                    d3.selectAll(`.${idKey}_label`).style("opacity", 1)
+                }, note_sec)    
+            } 
+
+    }
+
+    // This uses an an arrow function format so this.x works
+
+    makeCircle = (cx, cy, key=null) => {
+        const self = this
+  
+        d3.select("#features")
+            .append("circle")
+            .attr("cy", self.y(cy))
+            .attr("fill", schemes[self.colorScheme][0])
+            .attr("cx", self.x(cx))
+            .attr("r", 0)
+            .style("opacity", 1)
+            .transition()
+            .duration(1000)
+            .attr("r",40)
+            .style("opacity",0)
+            .remove()
+    
+    }
+
+
+    resetAnimation(options) {
+        const self = this
+        if (options.animationStyle == "playthrough") {
+            d3.selectAll(".clippy rect").attr("width", 0)  
+            d3.selectAll(".linelabels").style("opacity", 0)
+        }
+
+        d3.select("#positionCounterValue")
+            .text(self.xVarFormatterPosition(self.data[0][self.xVar]))
+    }
 
     play(options, sonic) {
 
@@ -620,7 +693,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
 
         // duration of each data point in  MILLISECONDS
 
-        var note = (options.duration / this.sonicData[this.keyOrder[0]].length) * 1000
+       
         
         console.log("note", note)
 
@@ -631,37 +704,15 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
 
         // Clear the chart ready to record
 
-        if (options.animationStyle == "playthrough") {
-            d3.selectAll(".clippy rect").attr("width", 0)  
-            d3.selectAll(".linelabels").style("opacity", 0)
-        }
        
      
-        d3.select("#positionCounterValue")
-            .text(self.xVarFormatterPosition(self.data[0][self.xVar]))
+       
 
         var pause = 0
 
         // animates one circle given x y data in an array 
 
-        function makeCircle(v) {
-            if (options.animationStyle == "playthrough") {  
-            console.log("Make circle", v)
-            d3.select("#features")
-                .append("circle")
-                .attr("cy", self.y(v[1]))
-                .attr("fill", schemes[self.colorScheme][0])
-                .attr("cx", self.x(v[0]))
-                .attr("r", 0)
-                .style("opacity", 1)
-                .transition()
-                .duration(1000)
-                .attr("r",40)
-                .style("opacity",0)
-                .remove()
-            }
-        }
-
+      
 
         function newAnimateContinuous(key) {
             let idKey = makeSafe(key)
@@ -679,44 +730,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
             }
         }
 
-        function newAnimateDiscrete(key, i, len) {
-            let idKey = makeSafe(key)
-            let currentClip = d3.select(`#${idKey}_clip rect`)
-    
-            // Continous line with little circle pop-ins for discrete data
-            var pause = (i === 0) ?  0 : note
-            d3.select("#positionCounterValue")
-                .text(self.xVarFormatterPosition(self.data[i][self.xVar]))
-
-            if (options.animationStyle == "playthrough") {   
-            d3.select("#features")
-                .append("circle")
-                .attr("cy", self.y(self.data[i][key]))
-                .attr("fill", self.colors.get(key))
-                .attr("cx", self.x(self.data[i][self.xVar]))
-                .attr("r", 0)
-                .style("opacity", 1)
-                .transition()
-                .duration(300)
-                .attr("r",40)
-                .style("opacity",0)
-                .remove()
-            
-                currentClip.transition()
-                    .duration(note)
-                    .ease(d3.easeLinear)
-                    .attr("width", self.x(self.data[i][self.xVar]))
-            
-                if (i == len - 1) {
-                    console.log("yo")
-                    currentClip.attr("width", self.width)
-                    setTimeout(() => {
-                        d3.selectAll(`.${idKey}_label`).style("opacity", 1)
-                    }, note)    
-                }
-         }   
-
-        }
+        
 
         let spareKeys = this.spareKeys
         // sonic.init(this.sonicData,this.x, this.y, this.xVar, this.keyOrder, this.margin, this.domain, duration/1000)
