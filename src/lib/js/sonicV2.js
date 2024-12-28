@@ -123,6 +123,7 @@ class NoisyChart {
 
         this.animateCircle = null
         this.animateDiscrete = null
+        this.chartAnimation = null
 
         this.chartID = 'chart'
 
@@ -144,9 +145,14 @@ class NoisyChart {
     this.animateCircle = animateCircle
   }
 
-  setAnimateDiscrete(animateDiscrete) {
-    this.animateDiscrete = animateDiscrete
+  // setAnimateDiscrete(animateDiscrete) {
+  //   this.animateDiscrete = animateDiscrete
+  // }
+
+  setChartAnimation(animationFunction) {
+    this.chartAnimation = animationFunction
   }
+
 
   async loadSynths(options) {
     console.log("Loading synths...")
@@ -555,13 +561,11 @@ class NoisyChart {
                 self.click.triggerAttackRelease(440, self.note, self.note * i)
               }
 
-
-
               Tone.Transport.schedule(function() {
                 self.currentIndex = d.sonic_index
                 if (self.options.animationStyle == 'playthrough') {
                   if (d[dataKey]) {
-                    self.animateDiscrete(self.note, dataKey, d.sonic_index, data.length)
+                    self.chartAnimation(self.note, dataKey, d.sonic_index, data.length)
                   }
                 }
                 // console.log(self.currentIndex)
@@ -573,13 +577,16 @@ class NoisyChart {
             console.log(data.length)
             if (i == 0) { 
               self.synths[keyIndex].triggerAttackRelease(self.scale(d[dataKey]), data.length * self.note, 0)
-              // animateCont(key)
+              self.chartAnimation(self.note, dataKey, d.sonic_index, data.length)
             }
             else {
+                
                 Tone.Transport.schedule(function(){
                   self.synths[keyIndex].frequency.rampTo(self.scale(d[dataKey]), self.note);
+                  self.chartAnimation(self.note, dataKey, d.sonic_index, data.length)
                 }, i * self.note);
             }
+            self.currentIndex = d.sonic_index
           }  
 
 
@@ -812,11 +819,11 @@ class NoisyChart {
       console.log("yeh")
       
       let currentKeyIndex = self.dataKeys.indexOf(self.currentKey)
-
+      console.log(currentKeyIndex)
       for (let i = currentKeyIndex; i < self.dataKeys.length; i++) {
         self.currentKey = self.dataKeys[i]
         let speakKey = await self.speaker(`${self.currentKey}`)
-        await self.playAudio(self.currentKey)
+        await self.playAudio([self.currentKey])
       }
 
     }
@@ -845,6 +852,7 @@ class NoisyChart {
   async moveCursor(direction) {
 
     let self = this
+    console.log("timeSettings",self.timeSettings)
 
     self.usedCursor = true
     self.isPlaying = false
@@ -870,11 +878,11 @@ class NoisyChart {
     let currentY = currentData[self.currentKey]
 
     function playCursorAudio() {
-      self.speaker(xvarFormatSpeech(currentX, self.timeSettings.suggestedFormat))
+      self.speaker(xvarFormatSpeech(currentX, self.settings.xAxisDateFormat))
       self.speaker(numberFormatSpeech(currentY))
-      if (self.animationID) {
-        self.animateCursor(self.currentKey,self.currentIndex, null)
-      }
+      
+      self.animateCircle(currentX,currentY,self.currentKey)
+      
       self.beep(self.scale(currentY))
     }
 
@@ -928,9 +936,9 @@ class NoisyChart {
     // console.log("New key", self.currentKey, "new key index", currentKeyIndex)
     self.speaker(self.currentKey)
     self.speaker(numberFormatSpeech(currentY))
-    if (self.animationID) {
-      self.animateCursor(self.currentKey,self.currentIndex, null)
-    }
+    
+    self.animateCircle(currentX,currentY,self.currentKey)
+    
     self.beep(self.scale(currentY))
   }
 
@@ -994,7 +1002,7 @@ class NoisyChart {
       if (self.chartID) {
         // Select the chart container
 
-        let chart = document.getElementById(self.chartID)
+        let chart = document.getElementById('interactionZone')
 
         // Makes the chart focusable with tab or screenreader
 

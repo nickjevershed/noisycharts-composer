@@ -61,7 +61,7 @@
         <Row>
           <Column>
           <h2>2. Edit and play chart</h2>
-          <div class="colorWrapper">  
+          <div class="colorWrapper" id="interactionZone">  
             <div class="chartMaker" style="width: {width}px;">
               <div id="chartWrapper" class="container {chartTheme}" style="{cssVarStyles}">
                   <div class="row" id="furniture">
@@ -76,7 +76,7 @@
                 {#if chartType}
                     <div id="chartContainer"  style="width: {width}px; height:{chartHeight}px;">
               
-                        <div id="positionCounter" draggable="true" class="draggable {chartSettings.positionCounter ? 'show' : 'hide'}" >
+                        <div id="positionCounter" draggable="true" class="draggable {noisyChartSettings.positionCounter ? 'show' : 'hide'}" >
                           <div id="positionCounterTitle" style="font-size: {12 * chartSettings.textScaling}px;"></div>
                           <div id="positionCounterValue" class="noto" style="font-size: {20 * chartSettings.textScaling}px;"></div>
                         </div>
@@ -189,6 +189,9 @@
     let statusMessage = "Waiting to load chart..."
     let loader = false
     let watermark = false
+
+    // Chart settings object 
+
     let chartSettings = {"title":"This is a headline", 
                   "subtitle":"This is a subtitle", 
                   "source":"The source text",
@@ -197,7 +200,6 @@
                   "marginleft":50, 
                   "marginright":20, 
                   "chartKey":true, 
-                  "positionCounter":false, 
                   "textScaling":1}
 
     /**
@@ -219,7 +221,7 @@
     let width = 620
     let height = 480
     let chartHeight = 480
-    let chartMaker = {}
+    let chartMaker = null
     let supportedCharts = ['linechart', 'verticalbar', 'horizontalbar']
     let soundPalette = ['Kalimba', 'Cello']
     let sonic = null;
@@ -236,10 +238,10 @@
     $: lineStroke = Math.max(2 * chartSettings.textScaling, 4)
     $: cssVarStyles = `--axis-text:${axisText}px;--axis-pad:${axisPad}px;--footer-text:${footerText}px;--line-stroke:${lineStroke}px;background-image: url("${customBackground}");background-size: cover;`;
     
-    // Sonification and animation option object, linked to the svelte controls. Should probably rename to avoid confusion with the options object used by charts
+    // Sonification and animation option object, linked to the svelte controls
     
     let noisyChartSettings = {
-      audioRendering: "continuous",
+      audioRendering: "discrete",
       chartMode:'no voiceover',
       duration: 5,
       low: 130.81,
@@ -254,6 +256,7 @@
       timeClick:null,
       interval:null,
       recording:false,
+      positionCounter:false
     }
   
 
@@ -399,7 +402,7 @@
   
         if (chartType == "horizontalbar") {
           noisyChartSettings.audioRendering = "categorical"
-          chartSettings.positionCounter = false
+          noisyChartSettings.positionCounter = false
           // noisyChartSettings.invertAudio = true
         }
   
@@ -477,8 +480,17 @@
             chartMaker.render()
             // sonic.test(chartMaker.test)
             sonic.setAnimateCircle(chartMaker.makeCircle)
-            sonic.setAnimateDiscrete(chartMaker.animateDiscrete)
-            
+
+            if (noisyChartSettings.audioRendering == 'discrete') {
+              sonic.setChartAnimation(chartMaker.animateDiscrete)
+            }
+
+            else if (noisyChartSettings.audioRendering == 'continuous') {
+              sonic.setChartAnimation(chartMaker.animateContinuous)
+            }
+
+            sonic.addInteraction()
+
             let draggies = document.querySelectorAll(".draggable");
             draggies.forEach(item => {
               dragger(item,  document.querySelectorAll("#chartContainer")) 
@@ -558,6 +570,15 @@
     }
 
     function updateOptions() {
+      if (chartMaker && sonic) {
+        if (noisyChartSettings.audioRendering == 'discrete') {
+              sonic.setChartAnimation(chartMaker.animateDiscrete)
+            }
+
+        else if (noisyChartSettings.audioRendering == 'continuous') {
+          sonic.setChartAnimation(chartMaker.animateContinuous)
+        }
+      }
       sonic.setupSonicData({data:chartSettings.data, options:noisyChartSettings})
     }
   

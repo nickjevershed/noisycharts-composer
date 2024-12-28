@@ -76,8 +76,9 @@ export default class Stackedbar {
 
 
     let spareKeys = this.spareKeys
-    spareKeys = spareKeys.slice(0,1)
-    console.log("spareKeys", spareKeys)
+    console.log("spareKeys",spareKeys)
+    // spareKeys = spareKeys.slice(0,1)
+    // console.log("spareKeys", spareKeys)
     isMobile = mobileCheck()
 
     let chartWidth = width
@@ -93,7 +94,7 @@ export default class Stackedbar {
     features.selectAll("*").remove()
     colors = new ColorScale()
     datum = data
-  
+    
 
     if (dateFormat != "") {
         isTime = true
@@ -119,6 +120,7 @@ export default class Stackedbar {
       }
     }    
 
+    console.log("colorScheme",colorScheme)
     const keyColor = colorTools.getKeysColors({
         keys: spareKeys,
         userKey: userkey,
@@ -126,6 +128,7 @@ export default class Stackedbar {
       })
 
     colors.set(keyColor.keys, keyColor.colors)  
+    console.log(colors.get([spareKeys[0]]))
 
     // datum.forEach((d) => {
     //     if (dateParse != "") {
@@ -288,7 +291,7 @@ export default class Stackedbar {
         return x(d[xVar])
       })
       .style("fill", function () {
-        return "rgb(204, 10, 17)"
+        return colors.get(spareKeys[1])
       })
       .attr("y", function (d) {
         return y(Math.max(d[spareKeys[0]], 0))
@@ -310,6 +313,7 @@ export default class Stackedbar {
     this.domainY = this.y.domain()
     // this.domainX = [xVarFormatterPosition(this.x.domain()[0]), xVarFormatterPosition(this.x.domain()[1])]
     this.domainX = [this.x.domain()[0], this.x.domain()[this.x.domain().length - 1]]
+    this.xVarFormatterPosition = xVarFormatterPosition
     this.margin = {"left":marginleft, "right": marginright, "top":margintop, "bottom":marginbottom}
     this.width = width
     this.height = height
@@ -317,10 +321,56 @@ export default class Stackedbar {
     this.sonicData = datum
     this.features = features
     this.data = datum
+    this.colors = colors
     this.xAxisFormat = xAxisFormat
     this.interval = interval
   } // end render
 
+
+   animateDiscrete = (note, key, i, len) => {
+  
+          const self = this
+          let filterData = self.sonicData.slice(0,i+1)
+            let bars = self.features.selectAll(".bar").data(filterData)
+            bars.exit().remove()
+            bars.enter().append("rect")
+                .attr("class", "bar")
+                .attr("x", function (d) {
+                return self.x(d[self.xVar])
+                })
+                .style("fill", function () {
+                return self.colors.get(self.spareKeys[1])
+                })
+                .attr("y", function (d) {
+                    return self.y(Math.max(d[self.spareKeys[0]], 0))
+                // return y(d[keys[0]])
+                })
+                .attr("width", self.x.bandwidth())
+                .attr("height", function (d) {
+                return Math.abs(self.y(d[self.spareKeys[0]]) - self.y(0))
+        
+                })
+
+            d3.select("#features")
+            .append("circle")
+            .attr("cy", self.y(self.data[i][self.spareKeys[0]]))
+            .attr("fill", self.colors.get(self.spareKeys[1]))
+            .attr("cx", self.x(self.data[i][self.xVar]) + self.x.bandwidth()/2)
+            .attr("r", 0)
+            .style("opacity", 1)
+            .transition()
+            .duration(300)
+            .attr("r",40)
+            .style("opacity",0)
+            .remove()   
+  
+  }
+
+  resetAnimation(options) {
+    const self = this
+    d3.select("#positionCounterValue")
+                .text(self.xVarFormatterPosition(self.data[0][self.xVar]))
+  }
 
   play(options, sonic) {
     console.log("Playing bar chart")

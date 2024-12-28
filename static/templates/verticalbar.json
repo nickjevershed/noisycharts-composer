@@ -30,7 +30,7 @@
 		"options": [{
             "enableShowMore": "FALSE",
             "aria": "FALSE",
-            "colorScheme": "schemeTableau10",
+            "colorScheme": "",
             "baseline" : "",
 			"invertY": ""
 		}],

@@ -608,6 +608,7 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
 
         // Continous line with little circle pop-ins for discrete data
         var pause = (i === 0) ?  0 : note
+        
         d3.select("#positionCounterValue")
             .text(self.xVarFormatterPosition(self.data[i][self.xVar]))
 
@@ -638,6 +639,27 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
 
     }
 
+    animateContinuous = (note, key, i, len) => {
+        const self = this
+        let idKey = makeSafe(key)
+        let currentClip = d3.select(`#${idKey}_clip rect`)
+
+        // Continous line for continous data
+        
+        if (i == 0) {
+            currentClip.transition()
+                .duration((note * len * 1000))
+                .ease(d3.easeLinear)
+                .attr("width", self.width)
+                .on("end", function() { d3.selectAll(`.${idKey}_label`).style("opacity", 1)})
+        }
+        
+        d3.select("#positionCounterValue")
+            .text(self.xVarFormatterPosition(self.data[i][self.xVar]))
+        
+    }
+
+
     // This uses an an arrow function format so this.x works
 
     makeCircle = (cx, cy, key=null) => {
@@ -646,17 +668,20 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
         d3.select("#features")
             .append("circle")
             .attr("cy", self.y(cy))
-            .attr("fill", schemes[self.colorScheme][0])
+            .attr("fill", self.colors.get(key))
             .attr("cx", self.x(cx))
             .attr("r", 0)
             .style("opacity", 1)
             .transition()
-            .duration(1000)
+            .duration(500)
             .attr("r",40)
             .style("opacity",0)
             .remove()
     
     }
+
+
+
 
 
     resetAnimation(options) {

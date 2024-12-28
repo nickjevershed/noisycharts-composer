@@ -195,7 +195,7 @@
       <h3>Annotations and labels</h3>
       <Row>
         <Column>
-        <RadioButtonGroup legendText="Position ticker" bind:selected={chartSettings.positionCounter}>
+        <RadioButtonGroup legendText="Position ticker" bind:selected={noisyChartSettings.positionCounter}>
           <RadioButton labelText="On" value={true} />
           <RadioButton labelText="Off" value={false} />
         </RadioButtonGroup>
