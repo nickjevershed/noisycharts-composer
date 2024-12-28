@@ -51,7 +51,7 @@ export function checkData(dataInput) {
   // TODO: csv with comma in quotes ("hi, sth. like this") is not parsed and json?
   const dataType = dataMatch.tab ? "tsv" : "csv";
 
-  console.log(dataInput)
+  // console.log(dataInput)
   // string => lines
   const dataLines = dataInput.split(/\n/g);
   // let dataLines = dataInput.split(/[\n|\r]/g);
@@ -117,7 +117,7 @@ export function givePrompt(dataInput) {
   // TODO: csv with comma in quotes ("hi, sth. like this") is not parsed and json?
   const dataType = dataMatch.tab ? "tsv" : "csv";
 
-  console.log(dataInput)
+  // console.log(dataInput)
   // string => lines
   const dataLines = dataInput.split(/\n/g);
   // let dataLines = dataInput.split(/[\n|\r]/g);
@@ -170,7 +170,7 @@ export function givePrompt(dataInput) {
 
       let range = dataTableRaw.rows.map(d => d.length)
 
-      console.log(range)
+      // console.log(range)
 
     
       let valid = range.every( (val, i, arr) => val === arr[0] )
@@ -260,8 +260,8 @@ function calculateMode(numbers) {
 
 
 // Example usage
-console.log(findNonMatchingIndex([5, 5, 5])); // undefined, all numbers match
-console.log(findNonMatchingIndex([10, 10, 15, 10])); // 2, the third number does not match
+// console.log(findNonMatchingIndex([5, 5, 5])); // undefined, all numbers match
+// console.log(findNonMatchingIndex([10, 10, 15, 10])); // 2, the third number does not match
 
 
 
@@ -293,7 +293,7 @@ export function parseDataInput(dataInput) {
   /* 1. meta , rows */
   // parse from data input
   dataLines.forEach(row => {
-    console.log(row)
+    // console.log(row)
     switch(dataType) {
     case "tsv": row = row.split("\t"); break;
     case "csv": row = row.split(",");  break;

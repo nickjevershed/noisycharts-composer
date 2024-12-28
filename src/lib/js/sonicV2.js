@@ -101,7 +101,7 @@ class NoisyChart {
         this.isPlaying = false
         this.inProgress = false
 
-        this.note = noisyChartSettings.note
+        this.note = 0.2
         
         this.sonicData = {}
 
@@ -118,7 +118,6 @@ class NoisyChart {
         this.furniturePlaying = false
         this.furniturePaused = false
         this.usedCursor = false
-        this.audioRendering = this.options.audioRendering
         this.keys = dataKeys
         this.interactionAdded = false
 
@@ -332,18 +331,24 @@ class NoisyChart {
   });
   }
 
-  setupSonicData(data, keys = [], exclude = []) {
+  setupSonicData({data, options, keys = [], exclude = []}) {
     console.log("Setting up data and synth")
-    console.log("data",data)
-    let self = this
     
+    let self = this
+    self.options = options
+    console.log("options",self.options)
     const xFormat = this.settings.xFormat
 
     if (self.settings.audioRendering) {
       self.audioRendering = self.settings.audioRendering
     }
 
+    let rowLength = data.length
+    let dataCols = Object.keys(data[0]).slice(1)
+    let numberCols = dataCols.length
+    let dataLength = rowLength * numberCols
 
+    self.note = self.options.duration / dataLength
     // console.log("note", self.note)
     // console.log("data", self.data)
     
@@ -431,9 +436,9 @@ class NoisyChart {
     
 
     // Setting the scale range for linear scale
-
+    
     let range = [self.options.low,self.options.high]
-
+    console.log("range", range)
     // console.log("allDataValues", allDataValues)
     // console.log("sonicData", self.sonicData)
     // console.log("highestVal", self.highestVal)
@@ -446,11 +451,13 @@ class NoisyChart {
     // ranked charts use inverted scale, eg bird of the year
     // https://interactive.guim.co.uk/embed/superyacht-testing/index.html?key=1WVTOMn-2BPVPUahzMzCM4H1inPM6oCT8w17GE5giDe8&location=docsdata
     
-    if ("invertY" in this.settings) {
-      if (this.settings.invertY) {
+
+    if (self.options.invertAudio) {
+
+        console.log("inverting")
         range = range.reverse()
-      }
     }
+    
     // console.log(scaleLinear())
     // console.log("range", range, "domain", self.domainY)
     
@@ -460,12 +467,13 @@ class NoisyChart {
 
     // If we're clamping the scale to musical notes, use a range of actual frequency values
     
-        if (self.settings.scaleNotes) {
-          let bottom = this.notes.findIndex(e => e == self.settings.low)
-          let top = this.notes.findIndex(e => e == self.settings.high)
+        if (self.options.scaleNotes) {
+          console.log("Clamping to notes")
+          let bottom = this.notes.findIndex(e => e == self.options.low)
+          let top = this.notes.findIndex(e => e == self.options.high)
           range = this.notes.slice(bottom, top + 1)
     
-          if (self.settings.invertAudio) {
+          if (self.options.invertAudio) {
             range = range.reverse()
           }
     
@@ -475,7 +483,7 @@ class NoisyChart {
         
         // If we're using a scale of discrete notes, use scaleQuantize
     
-        if (self.settings.scaleNotes) {
+        if (self.options.scaleNotes) {
           self.scale = d3.scaleQuantize()
             .domain(self.settings.domainY)
             .range(range)
@@ -493,135 +501,156 @@ class NoisyChart {
     self.synthLoaded = true    
 }
 
- playAudio = (dataKey) => {
+ playAudio = (noiseKeys) => {
     return new Promise(async (resolve, reject) => {
+      console.log("options", this.options)
       let self = this
-      let keyIndex = self.dataKeys.indexOf(dataKey)
-      console.log("keyIndex", keyIndex)
-      console.log("note", self.note)
-      // let halfway = self.sonicData[dataKey]
-      console.log(`Setting up the transport for ${dataKey}`)
-      // Clear the transport
-      console.log("audioRendering",self.audioRendering, self.synths[self.currentIndex])
       Tone.Transport.stop()
       Tone.Transport.cancel()
 
-      
-      // syncs the synth to the transport
-
-      if (self.audioRendering == "discrete") {  
-        console.log('yehhhhhhhhh')
-        self.synths[self.currentIndex].sync()
-        self.click.sync()
-      }
-
-      
-      let data = self.sonicData[dataKey]
-
-      // Check if the cursor has been used, slice to the current position
-      // console.log("current index",self.currentIndex)
-      if (self.currentIndex != 0) {
-        data = data.slice(self.currentIndex)
-        // console.log(data)
-      }
-
-      for (let i = 0; i < data.length; i++) {
-        const d = data[i];
-        self.currentKey = dataKey
+      noiseKeys.forEach(async function(dataKey) {  
+        let keyIndex = self.dataKeys.indexOf(dataKey)
+        console.log("keyIndex", keyIndex)
+        console.log("note", self.note)
+        // let halfway = self.sonicData[dataKey]
+        console.log(`Setting up the transport for ${dataKey}`)
+        // Clear the transport
+        console.log("audioRendering",self.audioRendering, self.synths[keyIndex])
+       
         
-        if (self.audioRendering == "discrete") {
-            
-            if (d[dataKey]) {
-                self.synths[self.currentIndex].triggerAttackRelease(self.scale(d[dataKey]), self.note, self.note * i)
-            }
-            
-            else {
-              self.click.triggerAttackRelease(440, self.note, self.note * i)
-            }
+        // syncs the synth to the transport
+
+        if (self.options.audioRendering == "discrete" || self.options.audioRendering == "continuous") {  
+          self.synths[keyIndex].sync()
+          self.click.sync()
+        }
+
+        // else if (self.options.audioRendering == "continuous") {  
+        //   self.synths[keyIndex].unsync()
+        //   self.click.sync()
+        // }
 
 
+        
+        let data = self.sonicData[dataKey]
 
-            Tone.Transport.schedule(function() {
-              self.currentIndex = d.sonic_index
-              if (self.options.animationStyle == 'playthrough') {
-                if (d[dataKey]) {
-                  self.animateDiscrete(self.note, dataKey, d.sonic_index, data.length)
-                }
+        // Check if the cursor has been used, slice to the current position
+        // console.log("current index",self.currentIndex)
+        if (self.currentIndex != 0) {
+          data = data.slice(self.currentIndex)
+          // console.log(data)
+        }
+
+        for (let i = 0; i < data.length; i++) {
+          const d = data[i];
+          self.currentKey = dataKey
+          
+          if (self.options.audioRendering == "discrete") {
+              
+              if (d[dataKey]) {
+                  self.synths[keyIndex].triggerAttackRelease(self.scale(d[dataKey]), self.note, self.note * i)
               }
-              // console.log(self.currentIndex)
-              }, i * self.note);
-        } // end discrete
-
-        else if (self.audioRendering == "continuous") {
-          // console.log("making continuous noise")
-          if (i == 0) { 
-            self.synths[self.currentIndex].triggerAttackRelease(self.scale(d[key]), data[dataKey].length * self.note)
-            // animateCont(key)
-          }
-          else {
-              Tone.Transport.schedule(function(){
-                self.synths[self.currentIndex].frequency.rampTo(self.scale(d[dataKey]), self.note);
-              }, i * self.note);
-          }
-        }  
+              
+              else {
+                self.click.triggerAttackRelease(440, self.note, self.note * i)
+              }
 
 
-        else if (self.audioRendering == "categorical") {
-            // console.log("categorical")
+
+              Tone.Transport.schedule(function() {
+                self.currentIndex = d.sonic_index
+                if (self.options.animationStyle == 'playthrough') {
+                  if (d[dataKey]) {
+                    self.animateDiscrete(self.note, dataKey, d.sonic_index, data.length)
+                  }
+                }
+                // console.log(self.currentIndex)
+                }, i * self.note);
+          } // end discrete
+
+          else if (self.options.audioRendering == "continuous") {
+            console.log("making continuous noise")
+            console.log(data.length)
+            if (i == 0) { 
+              self.synths[keyIndex].triggerAttackRelease(self.scale(d[dataKey]), data.length * self.note, 0)
+              // animateCont(key)
+            }
+            else {
+                Tone.Transport.schedule(function(){
+                  self.synths[keyIndex].frequency.rampTo(self.scale(d[dataKey]), self.note);
+                }, i * self.note);
+            }
+          }  
+
+
+          else if (self.options.audioRendering == "categorical") {
+              // console.log("categorical")
+              
+              await self.speaker(d[self.xVar])
+              if (self.animationID) {
+                self.animateCursor(dataKey,i, null)
+              } 
             
-            await self.speaker(d[self.xVar])
-            if (self.animationID) {
-              self.animateCursor(dataKey,i, null)
-            } 
-           
-            let thing2 = await self.beep(self.scale(d[dataKey]))
+              let thing2 = await self.beep(self.scale(d[dataKey]))
+          }
+      
+        }
+
+        // Reads out the middle X value halfway through the series
+
+        // let halfway = Math.floor(data.length / 2)
+        // Tone.Transport.schedule(function(){
+        //   console.log("the start")
+        //   self.speaker(xvarFormatSpeech(data[halfway][self.xVar], self.timeSettings.suggestedFormat))
+        // }, halfway * self.note);
+
+
+          // resolve after the last note is played
+
+        Tone.Transport.schedule(function(){
+          console.log("the end")
+          // self.speaker(xvarFormatSpeech(data[data.length - 1][self.xVar], self.timeSettings.suggestedFormat))
+          self.currentIndex = 0
+          self.isPlaying = false
+          if (!self.options.simultaneous) {
+            resolve({ status : "success"})
+          }
+          
+        }, data.length * self.note);
+      
+        // set inprogress to false after the last note of the last data series is played
+
+        if (keyIndex === self.dataKeys.length -1) {
+          Tone.Transport.schedule(function(){
+            console.log("the actual end")
+
+            self.inProgress = false
+            self.usedCursor = false
+            if (self.options.simultaneous) {
+              resolve({ status : "success"})
+            }
+            }, data.length * self.note);
         }
     
-      }
+        // console.log(Tone.Transport)
+        
 
-      // Reads out the middle X value halfway through the series
-
-      // let halfway = Math.floor(data.length / 2)
-      // Tone.Transport.schedule(function(){
-      //   console.log("the start")
-      //   self.speaker(xvarFormatSpeech(data[halfway][self.xVar], self.timeSettings.suggestedFormat))
-      // }, halfway * self.note);
-
-
-        // resolve after the last note is played
-
-      Tone.Transport.schedule(function(){
-        console.log("the end")
-        // self.speaker(xvarFormatSpeech(data[data.length - 1][self.xVar], self.timeSettings.suggestedFormat))
-        self.currentIndex = 0
-        self.isPlaying = false
-        resolve({ status : "success"})
-      }, data.length * self.note);
+      }); // End of noiseKeys loop
     
-      // set inprogress to false after the last note of the last data series is played
-
-      if (keyIndex === self.dataKeys.length -1) {
-        Tone.Transport.schedule(function(){
-          console.log("the actual end")
-          self.inProgress = false
-          self.usedCursor = false
-          }, data.length * self.note);
-      }
-  
-      // console.log(Tone.Transport)
       Tone.Transport.position = "0:0:0"  
       Tone.Transport.start()
       self.inProgress = true
       self.isPlaying = true
-      console.log("blah")
-    });
 
-  }  
+
+
+    }); // End of promise
+
+  }  // End of playAudio
 
  playFurniture = () => { 
     return new Promise((resolve, reject) => {
     let self = this
-    console.log("scale", self.scale.domain(), self.scale?.range())
     async function blah() {
 
       // uncomment to make testing synth / audio context faster  
@@ -632,12 +661,12 @@ class NoisyChart {
       let lowestY = self.settings.domainY[0]
       let highestY = self.settings.domainY[1]
 
-      if ("invertY" in self.settings) {
-        if (self.settings.invertY) {
-          lowestY = self.settings.domainY[1]
-          highestY = self.settings.domainY[0]
-        }
-      }
+
+        // if (self.settings.invertAudio) {
+        //   lowestY = self.settings.domainY[1]
+        //   highestY = self.settings.domainY[0]
+        // }
+      
   
       let lowestX = self.settings.domainX[0]
       let highestX = self.settings.domainX[1]
@@ -667,7 +696,7 @@ class NoisyChart {
        
         self.animateCircle(self.lowestVal[self.xVar],self.lowestVal.value, self.lowestVal.key)
         
-        console.log("lowestY", lowestY, self.scale(lowestY))
+        // console.log("lowestY", lowestY, self.scale(lowestY))
 
         const beep1 = await self.beep(self.scale(lowestY))        
     
@@ -750,17 +779,28 @@ class NoisyChart {
       // self.isPlaying = true
       // self.inProgress = true
       
+      // Check if simultaneous of sequential
+
+      if (self.options.simultaneous == false) {
+
         for await (const key of this.dataKeys) {
-          
           console.log("dataKey",key)
           // setTimeout(async () => {
+
           let speakKey = await self.speaker(`${key}`)
-          
-          await self.playAudio(key)
+          await self.playAudio([key])
 
           // },100)
         }
   
+      }
+
+      else if (self.options.simultaneous == true) {
+        console.log("simultaneous", this.dataKeys)     
+        await self.playAudio(this.dataKeys)
+      }
+
+
     }
   
     // Function to resume after using the cursor here

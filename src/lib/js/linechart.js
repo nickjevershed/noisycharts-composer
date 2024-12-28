@@ -85,9 +85,7 @@ export default class lineChart {
             textScaling } = (newSettings) ? newSettings : this.settings
             
         datum = data
-        console.log("datum", datum)
-        console.log("timeClick", timeClick)
-        console.log("settings", this.settings)
+
         let chartWidth = width
         let chartHeight = height
         width = width - marginleft - marginright
@@ -107,7 +105,6 @@ export default class lineChart {
             .rangeRound([0, height])
         }
         
-        console.log("key", key)
         let lineGenerators = {}
         let hideNullValues = "yes"
         let chartValues = []
@@ -124,15 +121,13 @@ export default class lineChart {
         features.selectAll("*").remove();
 
         colors = new ColorScale()
-      
-        console.log("colorScheme", colorScheme)
+    
         const keyColor = colorTools.getKeysColors({
             spareKeys: self.spareKeys,
             userKey: userkey,
             option: { colorScheme : colorScheme }
         })
       
-        console.log("userkey", userkey)
         colors.set(keyColor.spareKeys, keyColor.colors)
       
         if (breaks != "") {
@@ -146,15 +141,13 @@ export default class lineChart {
         }
       
         const parseTime = (dateFormat!="") ? d3.timeParse(dateFormat) : ""
-        console.log("parseTime", parseTime)
+
         const parsePeriods = (periodDateFormat!="") ? d3.timeParse(periodDateFormat) : ""
       
         marginright = marginright + getLongestKeyLength(svg, spareKeys, isMobile, lineLabelling)
 
 		width = chartWidth - marginright - marginleft
 		// svg.attr("width", this.width + this.margin.left + this.margin.right)
-
-        console.log(width, height, marginleft, marginright)  
 
         if (parseTime && typeof xVar == "string") {
             this.xAxisType = "time"
@@ -191,7 +184,6 @@ export default class lineChart {
               let chartKeys = JSON.parse(JSON.stringify(spareKeys))
                 // console.log(chartKeys)
                 chartKeys.forEach((key) => {
-                    console.log("chartkey", key)
                     const keyDiv = chartKeyDiv.append("div").attr("class", "keyDiv")
         
                     keyDiv
@@ -330,13 +322,12 @@ export default class lineChart {
         // }
 
         if (xAxisDateFormat != "") {
-            console.log("what", xAxisDateFormat)
             xAxisFormat = d3.timeFormat(xAxisDateFormat)
             xVarFormatterPosition = d3.timeFormat(xAxisDateFormat)
             }
         else {
           if (parseTime) {
-            console.log("Time date")
+
             if (dateFormat == "%Y") {
                 xAxisFormat = d3.timeFormat("%Y")
                 xVarFormatterPosition = d3.timeFormat("%Y")
@@ -348,7 +339,6 @@ export default class lineChart {
           }
 
           else {
-            console.log("aaa")
             xAxisFormat = x => x;
             xVarFormatterPosition = x => x;
           }
@@ -583,7 +573,6 @@ export default class lineChart {
  
         this.x = x
         this.y = y
-        console.log("x", this.x)
         this.xVar = xVar
         this.domainY = d3.extent(chartValues)
         this.domainX = [xVarFormatterPosition(this.x.domain()[0]), xVarFormatterPosition(this.x.domain()[this.x.domain().length - 1])]
@@ -641,7 +630,6 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
                 .attr("width", self.x(self.data[i][self.xVar]))
         
             if (i == len - 1) {
-                console.log("yo")
                 currentClip.attr("width", self.width)
                 setTimeout(() => {
                     d3.selectAll(`.${idKey}_label`).style("opacity", 1)
@@ -684,18 +672,11 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
 
     play(options, sonic) {
 
-        
-        console.log("Playing linechart")
-        console.log(options)
         const timer = ms => new Promise(res => setTimeout(res, ms))
 
         // sonic.init(this.sonicData,this.x, this.y, this.xVar, this.keyOrder, this.margin, this.domain, duration/1000)
 
         // duration of each data point in  MILLISECONDS
-
-       
-        
-        console.log("note", note)
 
         // console.log(options, note)
         const self = this

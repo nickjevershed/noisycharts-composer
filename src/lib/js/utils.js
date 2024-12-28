@@ -69,7 +69,7 @@ export function makeSafe(s) {
 export function merge(to, from) {
   
       for (const n in from) {
-          console.log(n)
+          // console.log(n)
           if (typeof to[n] != 'object') {
             to[n] = from[n];
           } else if (typeof from[n] == 'object') {
@@ -637,29 +637,31 @@ export function merge(to, from) {
     let numberCols = dataCols.length
     let dataLength = rowLength * numberCols
   
-    console.log("dataLength", dataLength)
+    // console.log("dataLength", dataLength)
     let targetDuration = 20
+    let newDuration = 20
     let note = 0.20
-    // console.log("full length at 0.20", note * dataLength)
+    
+    // // console.log("full length at 0.20", note * dataLength)
     if ((note * dataLength) <=  targetDuration) {
       // return {"note":note, "audioRendering":"discrete"}
-      return note
+      return note * dataLength
     }
   
     if ((note * dataLength) > targetDuration) {
       note = 0.1
     }
-  
+
     if ((note * dataLength) <=  targetDuration) {
       // return {"note":note, "audioRendering":"discrete"}
-      return note
+      return note * dataLength
     }
-  
+
     else {
       note = targetDuration / dataLength
       // TBC: set audioRendering to continuous for very long datasets. requires testing
       // return {"note":note, "audioRendering":"discrete"}
-      return note
+      return note * dataLength
     }
   
   }

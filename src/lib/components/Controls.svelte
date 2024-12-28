@@ -14,7 +14,7 @@
   import instruments from '$lib/data/instruments.json';
   import notes from '$lib/data/notes.json';
   import sizePresets from '$lib/data/sizes.json';
-  export let noisyChartSettings, loadInstruments, chartSettings, setDimensions, reRenderChart, chartTheme, changeStyle, customBackground;
+  export let noisyChartSettings, loadInstruments, chartSettings, setDimensions, reRenderChart, updateOptions, chartTheme, changeStyle, customBackground;
 </script>
 
 <Row>
@@ -24,24 +24,24 @@
       <h3>Audio and duration</h3>
       <Row>
         <Column>
-          <Select labelText="Voiceover mode" bind:selected={noisyChartSettings.chartMode} >
+          <Select labelText="Voiceover mode" bind:selected={noisyChartSettings.chartMode} on:change={updateOptions}>
               <SelectItem value="fully accessible" text="fully accessible" />
               <SelectItem value="human does voiceover" text="human does voiceover" />
               <SelectItem value="no voiceover" text="no voiceover" />
           </Select> 
         </Column>
         <Column>
-        <Slider bind:value={noisyChartSettings.duration} min={2} max={40} labelText="Duration (sec)"/>
+        <Slider bind:value={noisyChartSettings.duration} min={2} max={40} labelText="Duration (sec)" on:change={updateOptions}/>
         </Column>
         <Column>
-        <Select inline labelText="Lowest note" bind:selected={noisyChartSettings.low} >
+        <Select inline labelText="Lowest note" bind:selected={noisyChartSettings.low} on:change={updateOptions}>
           {#each notes as note}
             <SelectItem value={note.Frequency} text={note.Text} />
           {/each}
         </Select> 
         </Column>
         <Column>
-        <Select inline labelText="Highest note" bind:selected={noisyChartSettings.high} >
+        <Select inline labelText="Highest note" bind:selected={noisyChartSettings.high} on:change={updateOptions}>
           {#each notes as note}
             <SelectItem value={note.Frequency} text={note.Text} />
           {/each}
@@ -52,26 +52,26 @@
 
       <Row>
         <Column>
-          <Select labelText="Audio rendering" bind:selected={noisyChartSettings.audioRendering} >
+          <Select labelText="Audio rendering" bind:selected={noisyChartSettings.audioRendering} on:change={updateOptions}>
             <SelectItem value="discrete" text="Discrete/staccato" />
             <SelectItem value="categorical" text="Categorical" />
             <SelectItem value="continuous" text="Continuous/legato" />
           </Select> 
         </Column>
         <Column>
-          <RadioButtonGroup legendText="Play sequentially or simultaneously" bind:selected={noisyChartSettings.simultaneous}>
+          <RadioButtonGroup legendText="Play sequentially or simultaneously" bind:selected={noisyChartSettings.simultaneous} on:change={updateOptions}>
             <RadioButton labelText="Sequential" value={false} />
             <RadioButton labelText="Simultaneous" value={true} />
           </RadioButtonGroup>
         </Column>
         <Column>
-          <RadioButtonGroup legendText="Invert audio scale" bind:selected={noisyChartSettings.invertAudio}>
+          <RadioButtonGroup legendText="Invert audio scale" bind:selected={noisyChartSettings.invertAudio} on:change={updateOptions}>
             <RadioButton labelText="No" value={false} />
             <RadioButton labelText="Yes" value={true} />
           </RadioButtonGroup>
         </Column>
         <Column>
-          <RadioButtonGroup legendText="Scale to notes" bind:selected={noisyChartSettings.scaleNotes}>
+          <RadioButtonGroup legendText="Scale to notes" bind:selected={noisyChartSettings.scaleNotes} on:change={updateOptions}>
             <RadioButton labelText="No" value={false} />
             <RadioButton labelText="Yes" value={true} />
           </RadioButtonGroup>
@@ -80,19 +80,19 @@
 
       <Row>
         <Column>
-          <RadioButtonGroup legendText="Enable x axis cues" bind:selected={noisyChartSettings.timeClickEnabled}>
+          <RadioButtonGroup legendText="Enable x axis cues" bind:selected={noisyChartSettings.timeClickEnabled} on:change={updateOptions}>
             <RadioButton labelText="No" value={false} />
             <RadioButton labelText="Yes" value={true} />
           </RadioButtonGroup>
         </Column>
         <Column>
           {#if noisyChartSettings.timeClickEnabled}
-          <Slider bind:value={noisyChartSettings.timeClick} min={2} max={100} labelText="Kick every N values"/>
+          <Slider bind:value={noisyChartSettings.timeClick} min={2} max={100} labelText="Kick every N values" on:change={updateOptions}/>
           {/if}
         </Column>
         <Column>
      
-          <TextInput placeholder="" bind:value={noisyChartSettings.interval} labelText="Each note is a:"/>
+          <TextInput placeholder="" bind:value={noisyChartSettings.interval} labelText="Each note is a:" on:change={updateOptions}/>
         
         </Column>
       </Row>

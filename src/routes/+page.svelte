@@ -116,7 +116,7 @@
               
             </Column>
           </Row>
-          <Controls bind:noisyChartSettings loadInstruments={loadInstruments} bind:chartSettings setDimensions={setDimensions} reRenderChart={reRenderChart} bind:chartTheme changeStyle={changeStyle} bind:customBackground />
+          <Controls bind:noisyChartSettings loadInstruments={loadInstruments} bind:chartSettings setDimensions={setDimensions} reRenderChart={reRenderChart} updateOptions={updateOptions} bind:chartTheme changeStyle={changeStyle} bind:customBackground />
         {/if}
       </Grid>
     </Content>
@@ -225,6 +225,7 @@
     let sonic = null;
     let chartTheme = 'the-crunch'
     let firstSynthLoad = false
+    let dataConverted = false
     /**
      * @type {null}
      */
@@ -238,7 +239,7 @@
     // Sonification and animation option object, linked to the svelte controls. Should probably rename to avoid confusion with the options object used by charts
     
     let noisyChartSettings = {
-      audioRendering: "discrete",
+      audioRendering: "continuous",
       chartMode:'no voiceover',
       duration: 5,
       low: 130.81,
@@ -276,10 +277,10 @@
 
       let data = arrToJson(resp)
       
-      console.log("resp",resp)
+      // console.log("resp",resp)
      
       let specs = checkDatasetShape(data, resp.type, resp.head)
-      console.log("specs", specs)
+      // console.log("specs", specs)
       chartDataTypes.datasheet = specs
 
       // Sets the date time defaults
@@ -303,7 +304,7 @@
       activeCharts.forEach(d => {
   
         if (newActiveChartsArray.includes(d.type)) {
-          console.log("yeg")
+          // console.log("yeg")
           d.active = true
         }
       })
@@ -311,7 +312,7 @@
       // Svelte needs this to know the array has been updated   
       activeCharts = activeCharts;
 
-      console.log(activeCharts)
+      // console.log(activeCharts)
 
       chartData.sheets.data = data
       chartData.sheets.cols = specs.specs
@@ -319,7 +320,7 @@
       //console.log(orderJsonObjectByColumns(resp.head,data))
 
       dataIsValid = true
-
+      dataConverted = false
       prompt = 'Click the next step button to proceed'
 
     } else {
@@ -336,11 +337,11 @@
     // Loads chart data from a URL
   
     function loadData() {
-      console.log(inputURL)
+      // console.log(inputURL)
       chartMaker = {}
-      console.log("chartMaker",chartMaker)
+      // console.log("chartMaker",chartMaker)
       let chartJSONKey = null
-  
+      dataConverted = false
       // is it a google docs url? Later make this write JSON for a public sheet
   
       if (inputURL.includes("docs.google.com")) {
@@ -411,24 +412,27 @@
   
         let merged = merge(defaults, chartData)
         
-        console.log("merged",merged)
+        // console.log("merged",merged)
 
         // Parsing the settings from the merged object into a single settings object, converting things etc
   
         chartSettings = config(merged.sheets)
   
-        console.log("settings1", chartSettings)
+        // console.log("settings1", chartSettings)
 
         let dataSchema = schema(chartSettings.data);
         
-        convertData(chartSettings.data, chartSettings)
+        if (dataConverted == false) {
+          convertData(chartSettings.data, chartSettings)
+          dataConverted = true
+        }
 
         // console.log("convertedData", settings.data)
         // dateformat has been set so lets work out a good default interval etc
 
         if (chartSettings.dateFormat != "") {
           let dateTimeResults = analyseTime(chartSettings.data, chartSettings)
-          console.log(dateTimeResults)
+          // console.log(dateTimeResults)
           noisyChartSettings.interval = String(dateTimeResults.interval) + " " + dateTimeResults.timescale
           chartSettings.xAxisDateFormat = dateTimeResults.suggestedFormat
         }
@@ -458,10 +462,10 @@
           noisyChartSettings.selectedInstruments[i] = {seriesName: series, instrument: "Kalimba"}
         })
   
-        noisyChartSettings.note = getDuration(chartSettings.data)
-        console.log("note",noisyChartSettings.note)
+        noisyChartSettings.duration = getDuration(chartSettings.data)
+        // console.log("note",noisyChartSettings.note)
         sonic = new NoisyChart({chartSettings:chartSettings, noisyChartSettings:noisyChartSettings})
-        sonic.setupSonicData(chartSettings.data)
+        sonic.setupSonicData({data:chartSettings.data, options:noisyChartSettings})
         // Set up synths and load samples
   
         loader = sonic.loadSynths(noisyChartSettings)
@@ -492,7 +496,6 @@
       // console.log("noisyChartSettings", noisyChartSettings)
       // chartMaker.play(noisyChartSettings, sonic)
 
-
       chartMaker.resetAnimation(noisyChartSettings)
       sonic.playPause()
     }
@@ -504,14 +507,15 @@
   
     function loadInstruments(event) {
       if (event) {
+        console.log("loading...")
         loader = sonic.loadSynths(noisyChartSettings)
       }
     }
   
     function changeStyle(event) {
-      console.log("changeStyle")
+      // console.log("changeStyle")
       if (chartSettings.userkey.length == 0) {
-        console.log(chartTheme)
+        // console.log(chartTheme)
         chartSettings.colorScheme = chartTheme
         chartMaker.render(chartSettings)
         
@@ -524,7 +528,7 @@
   
     function setDimensions(value) {
       if (value) {
-        console.log(value)
+        // console.log(value)
         width = Number(value.split(",")[0])
         height = Number(value.split(",")[1])
         let ratio = width / 620
@@ -534,10 +538,10 @@
         chartSettings.marginright = chartSettings.marginright * ratio
         chartSettings.margintop = chartSettings.margintop * ratio
   
-        console.log("ratio", ratio)
+        // console.log("ratio", ratio)
         setTimeout(() => {
           let furnitureHeight = document.querySelector("#furniture").getBoundingClientRect().height + document.querySelector("#footer").getBoundingClientRect().height
-          console.log("furny height", furnitureHeight)
+          // console.log("furny height", furnitureHeight)
           chartHeight = height - furnitureHeight
           chartSettings.width = width
           chartSettings.height = chartHeight
@@ -551,6 +555,10 @@
     
     function reRenderChart() {
       chartMaker.render(chartSettings)
+    }
+
+    function updateOptions() {
+      sonic.setupSonicData({data:chartSettings.data, options:noisyChartSettings})
     }
   
   </script>
