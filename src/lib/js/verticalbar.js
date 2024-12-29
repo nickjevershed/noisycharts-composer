@@ -76,9 +76,12 @@ export default class Stackedbar {
 
 
     let spareKeys = this.spareKeys
-    console.log("spareKeys",spareKeys)
-    // spareKeys = spareKeys.slice(0,1)
-    // console.log("spareKeys", spareKeys)
+    // console.log("spareKeys",spareKeys)
+    
+    // TO FIX: Temporary hack to limite vertical bar to only one data series. Replace and support stacked bar chart
+
+    spareKeys = spareKeys.slice(0,1)
+    console.log("spareKeys", spareKeys)
     isMobile = mobileCheck()
 
     let chartWidth = width
@@ -95,7 +98,6 @@ export default class Stackedbar {
     colors = new ColorScale()
     datum = data
     
-
     if (dateFormat != "") {
         isTime = true
         dateParse = d3.timeParse(dateFormat)
@@ -174,8 +176,6 @@ export default class Stackedbar {
         xRange = datum.map((d) => d[xVar])
   
       }
-
-
       
       const chartKeyDiv = d3.select("#chartKey") 
       chartKeyDiv.html("")
@@ -209,6 +209,35 @@ export default class Stackedbar {
 
     const y = d3.scaleLinear()
       .range([height, 0])
+
+
+    let xVarFormatterPosition = null
+  
+    if (xAxisDateFormat != "") {
+        xAxisFormat = d3.timeFormat(xAxisDateFormat)
+        xVarFormatterPosition = d3.timeFormat(xAxisDateFormat)
+        }
+    else {
+      if (parseTime) {
+
+        if (dateFormat == "%Y") {
+            xAxisFormat = d3.timeFormat("%Y")
+            xVarFormatterPosition = d3.timeFormat("%Y")
+        }
+        else {
+            xAxisFormat = d3.timeFormat("%d %b '%y")
+            xVarFormatterPosition = d3.timeFormat("%d %b '%y")
+        }
+      }
+
+      else {
+        xAxisFormat = x => x;
+        xVarFormatterPosition = x => x;
+      }
+    }    
+
+
+
 
     let max = d3.max(datum, (d) => d[spareKeys[0]])  
     let min = d3.min(datum, (d) => d[spareKeys[0]])  
@@ -291,7 +320,7 @@ export default class Stackedbar {
         return x(d[xVar])
       })
       .style("fill", function () {
-        return colors.get(spareKeys[1])
+        return colors.get(spareKeys[0])
       })
       .attr("y", function (d) {
         return y(Math.max(d[spareKeys[0]], 0))
@@ -324,6 +353,7 @@ export default class Stackedbar {
     this.colors = colors
     this.xAxisFormat = xAxisFormat
     this.interval = interval
+    this.xVarFormatterPosition = xVarFormatterPosition
   } // end render
 
 
@@ -339,7 +369,7 @@ export default class Stackedbar {
                 return self.x(d[self.xVar])
                 })
                 .style("fill", function () {
-                return self.colors.get(self.spareKeys[1])
+                return self.colors.get(self.spareKeys[0])
                 })
                 .attr("y", function (d) {
                     return self.y(Math.max(d[self.spareKeys[0]], 0))
@@ -354,7 +384,7 @@ export default class Stackedbar {
             d3.select("#features")
             .append("circle")
             .attr("cy", self.y(self.data[i][self.spareKeys[0]]))
-            .attr("fill", self.colors.get(self.spareKeys[1]))
+            .attr("fill", self.colors.get(self.spareKeys[0]))
             .attr("cx", self.x(self.data[i][self.xVar]) + self.x.bandwidth()/2)
             .attr("r", 0)
             .style("opacity", 1)

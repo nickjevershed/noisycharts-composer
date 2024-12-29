@@ -749,7 +749,6 @@ class NoisyChart {
 
     Tone.context.resume()
 
-    
     console.log("isPlaying", self.isPlaying, "inProgress", self.inProgress, "usedCursor", self.usedCursor, "furniturePlayer", self.furniturePlaying, "furniturePaused", self.furniturePaused)
     
     // Audio has not played through, so start with the furniture

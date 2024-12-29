@@ -507,7 +507,7 @@
     function playChart() {
       // console.log("noisyChartSettings", noisyChartSettings)
       // chartMaker.play(noisyChartSettings, sonic)
-
+      
       chartMaker.resetAnimation(noisyChartSettings)
       sonic.playPause()
     }

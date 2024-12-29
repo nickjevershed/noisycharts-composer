@@ -11,16 +11,18 @@ const colorPresets = {
       "rgb(128, 128, 128)",
       "#000000"
     ],
-    darkmode: ["#ffd700",
-    "#ea5f94",
+    darkmode: [
+      "#ea5f94",
+      "#ffd700",
     "#13F4EF",
     "#fa8775",
     "#cd34b5",
     "#9d02d7",
     "#0000ff"],
 
-    "the-crunch":["#ffd700",
+    "the-crunch":[
     "#ea5f94",
+    "#ffd700",
     "#13F4EF",
     "#fa8775",
     "#cd34b5",
