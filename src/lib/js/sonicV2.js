@@ -4,7 +4,7 @@
 import * as Tone from 'tone'
 import * as d3 from 'd3' 
 import { xvarFormatSpeech, numberFormatSpeech, getEveryNth, getBrowser, checkNull } from './utils'
-import instruments from '$lib/data/instruments.json';
+import { instruments } from '$lib/js/instruments';
 import notes from '$lib/data/notes.json';
 import { browser } from '$app/environment';
 
@@ -1004,7 +1004,7 @@ class NoisyChart {
       if (self.chartID) {
         // Select the chart container
 
-        let chart = document.getElementById('interactionZone')
+        let chart = document.getElementById('controls')
 
         // Makes the chart focusable with tab or screenreader
 

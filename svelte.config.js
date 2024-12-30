@@ -8,7 +8,7 @@ const config = {
 			fallback: '404.html'
 		}),
 		paths: {
-			base: process.argv.includes('dev') ? '' : '/noisycharts-composer'
+			base: process.argv.includes('dev') ? '' : '/noisycharts'
 		}
 	}
 	

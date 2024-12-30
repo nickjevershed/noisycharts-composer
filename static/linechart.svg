@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 26.5.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 50 50" style="enable-background:new 0 0 50 50;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-linecap:round;stroke-miterlimit:10;}
+	.st1{fill:none;stroke:#FFFFFF;stroke-miterlimit:10;}
+</style>
+<path id="Passenger_line" class="st0" d="M4.4,6.8l4.2,1.6l4.2,1.8l4.2,2.7l4.2,2.8l4.2,2.8l4.2,4.2l4.2,2.5l4.2,4.6l4.2,2.5
+	l4.2,1.9"/>
+<path id="Light_commercial_line" class="st0" d="M5,42.9l4.2-0.3l4.2,0.3l4.2,0.4l4.2-1l4.2-1.1l4.2-0.6l4.2-0.5l4.2-0.9l4.2-1.5
+	l4.2,0.4"/>
+<path id="SUV_line" class="st0" d="M5.2,35.6l4.2-1.1l4.2-1.4l4.2-2.3l4.2-1.2l4.2-1.1l4.2-2.3l4.2-1.6l4.2-2.5l4.2-0.7l4.2-1.5"/>
+<line class="st1" x1="1.7" y1="47.8" x2="46.7" y2="47.8"/>
+<line class="st1" x1="1.2" y1="48.2" x2="1.2" y2="3.2"/>
+</svg>

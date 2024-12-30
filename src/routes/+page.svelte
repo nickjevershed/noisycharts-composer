@@ -4,7 +4,7 @@
         <Row>
           <Column>
             <h1>Noisycharts Composer</h1>
-            <p>This thing makes audio charts and animates them</p>
+            <p>This is a tool for makeing audio charts and animating them, either for accessibility purposes or for use in video and audio. It is very much a work in progress and has a lot of bugs! Read more here.</p>
           </Column>
         </Row>
 
@@ -52,7 +52,10 @@
             <h2>2. Select your chart type</h2>
             {#each activeCharts as chart, i}
             <div class="chartBlock {chart.active ? 'active' : 'inactive'}" on:click={() => createChart({chart}, 'buttons')} role="button" tabindex="0">
-              <div class="chart-interior">{chart.type}</div>
+              <div class="chart-interior">
+                <h4>{chart.type}<h4>
+                <img src='{base}/{chart.type}.svg'>
+              </div>
             </div>
             {/each}
           </Column>
@@ -99,10 +102,12 @@
           </div>  
           </Column>
         </Row>
-        {#if chartMaker}
-          <Row>
-            <Column>
-              
+       
+        
+        <Row>
+          <div id="controls">
+          <Column>
+         
               <Button on:click={playChart} disabled='{!loader}'>
                 Play chart
               </Button>
@@ -115,7 +120,10 @@
               </Button> -->
               
             </Column>
+          </div>  
+
           </Row>
+        {#if chartMaker}
           <Controls bind:noisyChartSettings loadInstruments={loadInstruments} bind:chartSettings setDimensions={setDimensions} reRenderChart={reRenderChart} updateOptions={updateOptions} bind:chartTheme changeStyle={changeStyle} bind:customBackground />
         {/if}
       </Grid>
@@ -148,6 +156,7 @@
     import NoisyChart from "$lib/js/sonicV2"
     import Controls from '$lib/components/Controls.svelte'
     import getDataTypeAnalysis from "$lib/js/detectDataType";
+    import { base } from '$app/paths';
     // load the json with an import statement
     import chartTypes from '$lib/data/chartTypes.json';
     // console.log(linechartJson.sheets)
@@ -421,7 +430,7 @@
         // Gets the default settings for each chart from a json file
         // If json is in the public directory 
 
-        let defaults = await getJson(`/templates/${chartType}.json`)
+        let defaults = await getJson(`${ base }/templates/${chartType}.json`)
      
         // Merges the default settings with any we have from a remote Google doc
   
@@ -678,6 +687,11 @@
         background-color: lightgrey;
         padding: 10px;
         cursor: pointer;
+      }
+
+      img {
+        height:80%;
+        width:80%;
       }
     }
   
