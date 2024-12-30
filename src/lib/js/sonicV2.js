@@ -92,7 +92,9 @@ class NoisyChart {
         this.xTimeClicks = []
 
         this.settings = chartSettings
+        console.log("chartSettings",chartSettings)
         this.options = noisyChartSettings
+        console.log("noisyChartSettings",noisyChartSettings)
         this.data = chartSettings.data
         
         // Playback and cursoring stuff
@@ -110,10 +112,11 @@ class NoisyChart {
         // this.domainY = null
 
         // The 'x axis' identifier
-        this.xVar = null
+        this.xVar = chartSettings.keys[0]
 
         this.scale = null
-        this.dataKeys = null
+        this.dataKeys = dataKeys
+        console.log("dataKeys", dataKeys)
 
         this.furniturePlaying = false
         this.furniturePaused = false
@@ -364,9 +367,9 @@ class NoisyChart {
     let click = self.click
   
     var hasRun = self.hasRun
-    let dataKeys = Object.keys(data[0])
+    let dataKeys = self.dataKeys
 
-    self.xVar = dataKeys[0]
+    // self.xVar = dataKeys[0]
 
     // console.log("time settings", self.timeSettings)
     // console.log("interval", self.interval)
@@ -377,12 +380,12 @@ class NoisyChart {
     // Check if chart code set specific keys, otherwise just use the keys from the data
 
     if (keys.length === 0) {
-        keys = dataKeys.slice(1)
+        keys = dataKeys
     }
 
     // make keys available to other methods
 
-    self.dataKeys = keys
+    // self.dataKeys = keys
     self.currentKey = keys[0]
     
     // To store the highest and lowest data objects
@@ -695,12 +698,11 @@ class NoisyChart {
 
       self.furniturePlaying = true
     
-    console.log("chart mode", self.options.chartMode)
+    console.log("lowestVal", self.lowestVal, self.lowestVal[self.xVar], self.xVar)
         
     if (self.options.chartMode === "fully accessible") {
         const text1 = await self.speaker(`The lowest value on the chart is ${lowestYStr}, and it sounds like `)
         
-       
         self.animateCircle(self.lowestVal[self.xVar],self.lowestVal.value, self.lowestVal.key)
         
         // console.log("lowestY", lowestY, self.scale(lowestY))
@@ -717,8 +719,9 @@ class NoisyChart {
     
         await timer(1200);
     
-        if (self.audioRendering == "discrete" || self.audioRendering == "continuous") {
-            const text3 = await self.speaker(`Each note is a ${self.settings.interval}, and the chart goes from ${lowestXStr} to ${highestXStr}`)
+        if (self.options.audioRendering == "discrete" || self.options.audioRendering == "continuous") {
+            console.log("yeah3")
+            const text3 = await self.speaker(`Each note is ${self.options.interval}, and the chart goes from ${lowestXStr} to ${highestXStr}`)
         }  
     } 
 
@@ -758,7 +761,7 @@ class NoisyChart {
       Tone.start()
       console.log("currentIndex", self.currentIndex, self.synths)
       self.synths[self.currentIndex].context.resume();
-      self.runOnce = true
+      // self.runOnce = true
       // self.inProgress = true
       
       await self.playFurniture()

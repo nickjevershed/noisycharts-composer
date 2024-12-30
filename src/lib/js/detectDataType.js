@@ -8,12 +8,11 @@ import { getDateAnalysis } from "$lib/js/typeDate";
 import { getNumberAnalysis } from "$lib/js/typeNumber";
 
 export default function(dataArr = "", src) {
-
+  // console.log("dataArr", dataArr, "src", src)
   /* data */
   // remove missing data if data src is from table body
   let data = { types:[] };
   let dataClean = src === "body" ? dataArr.filter(data => data) : dataArr;
-
 
   /* date format */
   const dataDate = getDateAnalysis(dataClean);

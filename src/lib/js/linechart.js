@@ -663,8 +663,9 @@ Each note is a ${this.interval}, and the chart goes from ${this.domainX[0]} to $
     // This uses an an arrow function format so this.x works
 
     makeCircle = (cx, cy, key=null) => {
+        
         const self = this
-  
+        console.log(cx,cy,key, self.x(cx), self.y(cy), self.colors.get(key))
         d3.select("#features")
             .append("circle")
             .attr("cy", self.y(cy))

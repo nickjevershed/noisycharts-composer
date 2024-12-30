@@ -321,6 +321,7 @@ export function parseDataInput(dataInput) {
   /* 3. flag, head, type, body (of dataTableDraw) */
   // add properties from parseDataTableRaw.js including dataTableRaw and dataTableDraw
   const dataTable = getDataTable(dataTableRaw);
+  console.log("dataTable", dataTable)
   /*
     console.log("input -> table")
     // in this file

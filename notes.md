@@ -13,6 +13,8 @@
 
 - Audio export
 
+- Fix bugs lol
+
 Features planned after v1:
 
 - video export

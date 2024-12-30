@@ -396,6 +396,26 @@ export default class Stackedbar {
   
   }
 
+    makeCircle = (cx, cy, key=null) => {
+          
+          const self = this
+          // console.log(cx,cy,key, self.x(cx), self.y(cy), self.colors.get(key))
+          d3.select("#features")
+              .append("circle")
+              .attr("cy", self.y(cy))
+              .attr("fill", self.colors.get(key))
+              .attr("cx", self.x(cx) + self.x.bandwidth()/2)
+              .attr("r", 0)
+              .style("opacity", 1)
+              .transition()
+              .duration(500)
+              .attr("r",40)
+              .style("opacity",0)
+              .remove()
+      
+      }
+  
+
   resetAnimation(options) {
     const self = this
     d3.select("#positionCounterValue")

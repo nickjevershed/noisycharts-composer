@@ -51,7 +51,7 @@
           <Column>
             <h2>2. Select your chart type</h2>
             {#each activeCharts as chart, i}
-            <div class="chartBlock" class:active={chart.active} on:click={() => createChart({chart}, 'buttons')}>
+            <div class="chartBlock {chart.active ? 'active' : 'inactive'}" on:click={() => createChart({chart}, 'buttons')} role="button" tabindex="0">
               <div class="chart-interior">{chart.type}</div>
             </div>
             {/each}
@@ -143,9 +143,11 @@
     import { convertData } from "$lib/js/convertData";
     import { checkData, parseDataInput, arrToJson, givePrompt } from "$lib/js/parseDataInput"
     import { checkDatasetShape, checkDataIsFormattedForChartType } from "$lib/js/checkDatasetShape"
+    import { convertSpreadsheetData } from "$lib/js/convertSpreadsheetData"
     import { dragger } from '$lib/js/dragger';
     import NoisyChart from "$lib/js/sonicV2"
     import Controls from '$lib/components/Controls.svelte'
+    import getDataTypeAnalysis from "$lib/js/detectDataType";
     // load the json with an import statement
     import chartTypes from '$lib/data/chartTypes.json';
     // console.log(linechartJson.sheets)
@@ -189,7 +191,7 @@
     let statusMessage = "Waiting to load chart..."
     let loader = false
     let watermark = false
-
+    let dataSource = null
     // Chart settings object 
 
     let chartSettings = {"title":"This is a headline", 
@@ -215,6 +217,7 @@
 
     let chartDataTypes = []
     let activeCharts = chartTypes.filter(d => d.noisycharts_supported)
+    console.log("activeCharts",activeCharts)
     let dataIsValid = false
     let txtToJson = "Year	Passenger	Light commercial	SUV\n2012-01-01	51.9	17.83	27.5\n2013-01-01	49.9	18	29.35\n2014-01-01	47.75	17.78	31.65\n2015-01-01	44.63	17.23	35.35\n2016-01-01	41.27	18.48	37.43\n2017-01-01	37.8	19.9	39.16\n2018-01-01	32.8	20.64	42.95\n2019-01-01	29.7	21.23	45.48\n2020-01-01	24.2	22.42	49.59\n2021-01-01	21.1	24.12	50.65\n2022-01-01	18.8	23.71	53.14"
     let prompt = ""
@@ -228,6 +231,7 @@
     let chartTheme = 'the-crunch'
     let firstSynthLoad = false
     let dataConverted = false
+    let dataSeries = []
     /**
      * @type {null}
      */
@@ -242,7 +246,7 @@
     
     let noisyChartSettings = {
       audioRendering: "discrete",
-      chartMode:'no voiceover',
+      chartMode:'fully accessible',
       duration: 5,
       low: 130.81,
       high: 523.25,
@@ -280,10 +284,10 @@
 
       let data = arrToJson(resp)
       
-      // console.log("resp",resp)
+      console.log("resp",resp)
      
       let specs = checkDatasetShape(data, resp.type, resp.head)
-      // console.log("specs", specs)
+      console.log("specs", specs)
       chartDataTypes.datasheet = specs
 
       // Sets the date time defaults
@@ -324,7 +328,9 @@
 
       dataIsValid = true
       dataConverted = false
+      dataSource = 'paste'
       prompt = 'Click the next step button to proceed'
+
 
     } else {
 
@@ -377,11 +383,17 @@
         .then((results) => { 
           
           // Update chart data with the spreadsheet/json data
+          console.log(results)
+
+         
+
           chartData = results
           let chartType = results['sheets']['chartId'][0]['type']
           let chartSettings = {chart: activeCharts.filter((d) => d.type === chartType)[0]}
+          dataSource = 'yacht'
+          // let specs = checkDatasetShape(data, resp.type, resp.head)
           // noisyChartSettings = setDefaults(chartData, noisyChartSettings)
-          createChart(chartSettings, 'yachtURL')
+          createChart(chartSettings)
 
         });
   
@@ -389,7 +401,7 @@
       }
     }
   
-    async function createChart(chartObj, from) {
+    async function createChart(chartObj) {
 
       chartType = chartObj.chart.type
       
@@ -421,13 +433,21 @@
   
         chartSettings = config(merged.sheets)
   
-        // console.log("settings1", chartSettings)
+        console.log("chartSettings", chartSettings)
 
         let dataSchema = schema(chartSettings.data);
         
         if (dataConverted == false) {
-          convertData(chartSettings.data, chartSettings)
-          dataConverted = true
+          if (dataSource == "paste") {
+            convertData(chartSettings.data, chartSettings)
+            dataConverted = true
+          }
+          
+          else if (dataSource == "yacht") {
+            convertSpreadsheetData(chartSettings.data, chartSettings) 
+            dataConverted = true
+          }
+          
         }
 
         // console.log("convertedData", settings.data)
@@ -435,7 +455,7 @@
 
         if (chartSettings.dateFormat != "") {
           let dateTimeResults = analyseTime(chartSettings.data, chartSettings)
-          // console.log(dateTimeResults)
+   
           noisyChartSettings.interval = String(dateTimeResults.interval) + " " + dateTimeResults.timescale
           chartSettings.xAxisDateFormat = dateTimeResults.suggestedFormat
         }
@@ -459,15 +479,21 @@
   
         // Make an instrument per data series, like a color palette
   
-        let dataSeries = chartSettings.keys.slice(1)
-  
+        dataSeries = chartSettings.keys.slice(1)
+        
+        if (chartSettings.type == "verticalbar") {
+          dataSeries = dataSeries.slice(0,1)
+        }
+
+
         dataSeries.forEach((series,i) => {
+          console.log(series)
           noisyChartSettings.selectedInstruments[i] = {seriesName: series, instrument: "Kalimba"}
         })
   
         noisyChartSettings.duration = getDuration(chartSettings.data)
         // console.log("note",noisyChartSettings.note)
-        sonic = new NoisyChart({chartSettings:chartSettings, noisyChartSettings:noisyChartSettings})
+        sonic = new NoisyChart({chartSettings:chartSettings, noisyChartSettings:noisyChartSettings, dataKeys:dataSeries})
         sonic.setupSonicData({data:chartSettings.data, options:noisyChartSettings})
         // Set up synths and load samples
   
@@ -507,7 +533,7 @@
     function playChart() {
       // console.log("noisyChartSettings", noisyChartSettings)
       // chartMaker.play(noisyChartSettings, sonic)
-      
+
       chartMaker.resetAnimation(noisyChartSettings)
       sonic.playPause()
     }
@@ -659,6 +685,10 @@
       .chart-interior {
           background-color: #0f62fe;
       }
+    }
+
+    .chartBlock.inactive {
+      pointer-events: none;
     }
 
   </style>
