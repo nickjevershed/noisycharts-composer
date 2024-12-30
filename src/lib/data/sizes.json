@@ -1,8 +1,0 @@
-[
-    {"Text":"620x480 (landscape)", "Sizes":"620,480"},
-    {"Text":"1280x720 (landscape)", "Sizes":"1280,720"},
-    {"Text":"1920x1080 (landscape)", "Sizes":"1920,1080"},
-    {"Text":"720x720 (square)", "Sizes":"720,720"},
-    {"Text":"1080x1080 (square)", "Sizes":"1080,1080"},
-    {"Text":"1080x1920 (portrait)", "Sizes":"1080,1920"}
-]

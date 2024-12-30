@@ -1,0 +1,52 @@
+{
+    "sheets": {
+        "data": [],
+        "template": [
+            {
+                "title": "This is a headline",
+                "subtitle": "This is a subtitle",
+                "footnote" : "",
+                "source": "",
+                "interval":"",
+                "dateFormat": "",
+                "yScaleType": "",
+                "xAxisLabel": "",
+                "yAxisLabel": "",
+                "xAxisFormat": "",
+                "xAxisDateFormat":"",
+                "baseline": "",
+                "tooltip": "",
+                "periodDateFormat": "",
+                "margin-left": "30",
+                "margin-top": "30",
+                "margin-bottom": "20",
+                "margin-right": "30",
+                "minX": "0",
+                "minY": "0",
+                "maxY" : "",
+                "x_axis_cross_y" : "",
+                "xColumn" : "",
+                "yColumn" : ""
+            }
+        ],
+        "options": [
+            {
+                "enableShowMore": "FALSE",
+                "lineLabelling" : "FALSE",
+                "aria": "FALSE",
+                "colorScheme": "",
+                "breaks" : "",
+                "invertY": "FALSE"
+            }
+        ],
+        "chartId": [
+            {
+                "type": "linechart"
+            }
+        ],
+        "userkey": [],
+        "periods": [],
+        "labels": [],
+        "dropdown": []
+    }
+}
