@@ -1,7 +1,7 @@
 import * as d3 from "d3"
-import colorTools from "./colortools"
-import ColorScale from "./colorscale"
-import schemes from './colorschemes.json'
+import colorTools from "$lib/js/colortools"
+import ColorScale from "$lib/js/colorscale"
+import schemes from '$lib/data/colorschemes.json'
 import { numberFormat, mobileCheck, stackMin, stackMax } from './utils';
 
 export default class Horizontalbar {
