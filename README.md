@@ -1,6 +1,6 @@
 # Noisycharts Composer
 
-This is the next iteration of our experiments with [audiocharts](https://observablehq.com/@nickjevershed/data-sonification-prototype). It is an app for creating, editing and recording charts with the data represented sonically as well as graphically.
+This is the next iteration of our experiments with audiocharts. It is an app for creating, editing and recording charts with the data represented sonically as well as graphically. You can see a live work-in-progress version [here](https://nickjevershed.github.io/noisycharts/)
 
 Built with svelte, vite, d3 and tone-js. 
 
