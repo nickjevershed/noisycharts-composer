@@ -74,13 +74,13 @@ export default class Stackedbar {
           $dropdown,
           textScaling } = this.settings
 
-
+    console.log("settings", this.settings)
     let spareKeys = this.spareKeys
     // console.log("spareKeys",spareKeys)
     
     // TO FIX: Temporary hack to limite vertical bar to only one data series. Replace and support stacked bar chart
 
-    spareKeys = spareKeys.slice(0,1)
+    // spareKeys = spareKeys.slice(0,1)
     console.log("spareKeys", spareKeys)
     isMobile = mobileCheck()
 
@@ -132,6 +132,12 @@ export default class Stackedbar {
     colors.set(keyColor.keys, keyColor.colors)  
     console.log(colors.get([spareKeys[0]]))
 
+    datum.forEach((d) => {
+      d.Total = d3.sum(spareKeys, (k) => +d[k])
+    })  
+
+    console.log("datum",datum)
+
     // datum.forEach((d) => {
     //     if (dateParse != "") {
     //       if (typeof d[xVar] === "string") {
@@ -145,6 +151,7 @@ export default class Stackedbar {
     // })
    
     let xRange
+
     if (timeInterval != "") {
 
         if (timeInterval == "year") {
@@ -172,7 +179,7 @@ export default class Stackedbar {
         }
   
       } else {
-  
+        console.log("mapping xRange")
         xRange = datum.map((d) => d[xVar])
   
       }
@@ -199,11 +206,29 @@ export default class Stackedbar {
       // })
 
     
+      var layers = d3.stack()
+      .offset(d3.stackOffsetDiverging)
+      .keys(spareKeys)(datum)
+  
+      layers.forEach(function(layer) {
+        layer.forEach(function(subLayer) {
+          subLayer.group = layer.key
+          subLayer.groupValue = subLayer.data[layer.key]
+          subLayer.total = subLayer.data.Total
+        })
+      })
 
+
+    let extent = [d3.min(layers, stackMin), d3.max(layers, stackMax)]  
+    
+    console.log("layers",layers)  
+    console.log("extent", extent)
 
     const x = d3.scaleBand()
       .range([0, width])
       .paddingInner(0.2)
+
+    console.log("xRange", xRange)  
 
     x.domain(xRange)
 
@@ -239,13 +264,14 @@ export default class Stackedbar {
 
 
 
-    let max = d3.max(datum, (d) => d[spareKeys[0]])  
-    let min = d3.min(datum, (d) => d[spareKeys[0]])  
-    if (baseline) {
-      min = +baseline
-    }
+    // let max = d3.max(datum, (d) => d[spareKeys[0]])  
+    // let min = d3.min(datum, (d) => d[spareKeys[0]])  
 
-    y.domain([0, max])
+    // if (baseline) {
+    //   min = +baseline
+    // }
+
+    y.domain(extent)
 
     var xAxis
     var yAxis
@@ -312,25 +338,51 @@ export default class Stackedbar {
     d3.selectAll(".domain")
     .attr("stroke", "#767676")
 
-    features.selectAll(".bar")
-      .data(datum)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", function (d) {
-        return x(d[xVar])
-      })
-      .style("fill", function () {
-        return colors.get(spareKeys[0])
-      })
-      .attr("y", function (d) {
-        return y(Math.max(d[spareKeys[0]], 0))
-        // return y(d[keys[0]])
-      })
-      .attr("width", x.bandwidth())
-      .attr("height", function (d) {
-        return Math.abs(y(d[spareKeys[0]]) - y(0))
+    // features.selectAll(".bar")
+    //   .data(datum)
+    //   .enter().append("rect")
+    //   .attr("class", "bar")
+    //   .attr("x", function (d) {
+    //     return x(d[xVar])
+    //   })
+    //   .style("fill", function () {
+    //     return colors.get(spareKeys[0])
+    //   })
+    //   .attr("y", function (d) {
+    //     return y(Math.max(d[spareKeys[0]], 0))
+    //     // return y(d[keys[0]])
+    //   })
+    //   .attr("width", x.bandwidth())
+    //   .attr("height", function (d) {
+    //     return Math.abs(y(d[spareKeys[0]]) - y(0))
 
-      })
+    //   })
+
+    const layer = features
+    .selectAll("layer")
+    .data(layers, (d) => d.key)
+    .enter()
+    .append("g")
+    .attr("class", (d) => "layer " + d.key)
+    .style("fill", (d, i) => colors.get(d.key))
+    
+    layer
+    .selectAll("rect")
+    .data((d) => d)
+    .enter()
+    .append("rect")
+    .attr("x", (d) => x(d.data[xVar]))
+    .attr("y", (d) => y(d[1]))
+    .attr("class", "barPart")
+    .attr("title", (d) => d.data[d.key])
+    .attr("data-group", (d) => d.group)
+    .attr("data-count", (d) => d.data[d.key])
+    .attr("height", (d) => y(d[0]) - y(d[1]))
+    .attr("width", (d) => {
+      let band = x.bandwidth()
+      return (band < 4) ? band : band - 2
+    }) //x(data[data.length - 1][xColumn]) / data.length
+
 
       d3.select("#positionCounterTitle").text(xVar)
       d3.select("#positionCounterValue").text(xAxisFormat(datum[datum.length -1][xVar]))  

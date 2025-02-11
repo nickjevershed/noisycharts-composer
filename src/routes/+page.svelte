@@ -165,7 +165,9 @@
 
     // Polling
 
-    let inputURL = "https://docs.google.com/spreadsheets/d/1HqFpDPomxnanDcMf92c8-f2m6STKO8ua9wtAUCbPjtw/edit?gid=0"
+    // SUV verticalbar
+
+    let inputURL = "https://docs.google.com/spreadsheets/d/1xHsc8gZkBtTwV0ZpS88GvpoTKrMmFkUqA8NOxz0ErV0/edit?gid=182235459"
 
     let templatesLoaded = false;
     async function loadJson(url) {
