@@ -1,16 +1,39 @@
 # Noisycharts Composer v0.2
 
-This is the next iteration of our experiments with audiocharts. It is an app for creating, editing and recording charts with the data represented sonically as well as graphically. You can see a live work-in-progress version [here](https://nickjevershed.github.io/noisycharts/)
+Noisycharts Composer is an app for creating, editing and recording animated and sonified charts. These can be used in video and audio, either for accessibility purposes or to add an extra dimension to data storytelling in video and audio platforms. You can see a live work-in-progress version [here](https://nickjevershed.github.io/noisycharts/).
 
-Built with svelte, vite, d3 and tone-js. 
+## Development
 
-To run locally:
+Noisycharts Composer is built with [SvelteKit](https://svelte.dev/docs/kit/introduction) as the front-end framework (and possible, later backend), [vite](https://github.com/vitejs/vite), [ToneJS](https://tonejs.github.io/) for sonification, and [d3](https://d3js.org/) for making and animating the charts.
 
-```
+
+Once you've installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+
+```bash
 npm run dev
 ```
 
-Example chart data URLs:
+Or start the server and open the app in a new browser tab:
+
+```bash
+npm run dev -- --open
+```
+
+**To deploy:**
+
+We currently use GitHub pages for hosting. Pushing to the main branch will trigger a deploy, so please do all development in side branches until it is ready for production.
+
+**Other Vite/SvelteKit commands:**
+
+```bash
+npm run build
+```
+
+```bash
+npm run preview
+```
+
+Testing data URLs:
 
 bar chart
 https://docs.google.com/spreadsheets/d/1FiaIHyTZCeCVZY39n82eUWm4wBFBqQ0o3OYF7G9Brac/edit#gid=0
@@ -44,26 +67,3 @@ https://docs.google.com/spreadsheets/d/1UHlyqkwnGnL5hQd4irq2mcDfXJDQINjV_Mf0-8a7
 
 continuous testing
 https://docs.google.com/spreadsheets/d/14avK1c9BAywhkBHzXBtdW6lXm9OG_nuJ2b3Z2ePLNhg/edit#gid=0
-
-## Developing
-
-Once you've installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
