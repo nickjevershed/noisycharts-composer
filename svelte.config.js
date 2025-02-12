@@ -10,9 +10,9 @@ const config = {
       		assets: 'build'
 		}),
 		paths: {
-			base: process.argv.includes('dev') ? '' : '/noisycharts'
-		}
-	}
+			base: process.env.GITHUB_ACTIONS ? '/noisycharts-composer' : '' // Set correct GitHub Pages subpath
+		},
+		trailingSlash: 'always' // Ensures correct relative URLs
 	
 };
 
