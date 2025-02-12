@@ -11,8 +11,7 @@ const config = {
 		}),
 		paths: {
 			base: process.argv.includes('dev') ? '' : 'noisycharts-composer/'
-		},
-		trailingSlash: 'always'
+		}
 	}
 	
 };
