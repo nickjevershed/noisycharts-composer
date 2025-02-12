@@ -5,7 +5,9 @@ const config = {
 	preprocess : sveltePreprocess(),
 	kit: {
 		adapter: adapter({
-			fallback: '404.html'
+			fallback: '404.html',
+			pages: 'build', // Must match the path in GitHub Actions
+      		assets: 'build'
 		}),
 		paths: {
 			base: process.argv.includes('dev') ? '' : '/noisycharts'
