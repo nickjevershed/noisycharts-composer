@@ -257,7 +257,7 @@
     
     let noisyChartSettings = {
       audioRendering: "discrete",
-      chartMode:'fully accessible',
+      chartMode:'no voiceover',
       duration: 5,
       low: 130.81,
       high: 523.25,
@@ -492,11 +492,11 @@
   
         dataSeries = chartSettings.keys.slice(1)
         
-        if (chartSettings.type == "verticalbar") {
-          dataSeries = dataSeries.slice(0,1)
-        }
+        // if (chartSettings.type == "verticalbar") {
+        //   dataSeries = dataSeries.slice(0,1)
+        // }
 
-
+        console.log("dataseries", dataSeries)
         dataSeries.forEach((series,i) => {
           console.log(series)
           noisyChartSettings.selectedInstruments[i] = {seriesName: series, instrument: "Kalimba"}

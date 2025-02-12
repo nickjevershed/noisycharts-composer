@@ -132,9 +132,9 @@ export default class Stackedbar {
     colors.set(keyColor.keys, keyColor.colors)  
     console.log(colors.get([spareKeys[0]]))
 
-    datum.forEach((d) => {
-      d.Total = d3.sum(spareKeys, (k) => +d[k])
-    })  
+    // datum.forEach((d) => {
+    //   d.Total = d3.sum(spareKeys, (k) => +d[k])
+    // })  
 
     console.log("datum",datum)
 
@@ -214,7 +214,7 @@ export default class Stackedbar {
         layer.forEach(function(subLayer) {
           subLayer.group = layer.key
           subLayer.groupValue = subLayer.data[layer.key]
-          subLayer.total = subLayer.data.Total
+          // subLayer.total = subLayer.data.Total
         })
       })
 
@@ -361,19 +361,21 @@ export default class Stackedbar {
     const layer = features
     .selectAll("layer")
     .data(layers, (d) => d.key)
+
+    let groups = layer
     .enter()
     .append("g")
     .attr("class", (d) => "layer " + d.key)
     .style("fill", (d, i) => colors.get(d.key))
     
-    layer
+    groups
     .selectAll("rect")
     .data((d) => d)
     .enter()
     .append("rect")
     .attr("x", (d) => x(d.data[xVar]))
     .attr("y", (d) => y(d[1]))
-    .attr("class", "barPart")
+    .attr("class", "bar")
     .attr("title", (d) => d.data[d.key])
     .attr("data-group", (d) => d.group)
     .attr("data-count", (d) => d.data[d.key])
@@ -401,50 +403,85 @@ export default class Stackedbar {
     this.keyOrder = spareKeys
     this.sonicData = datum
     this.features = features
+    this.layers = layers
     this.data = datum
     this.colors = colors
     this.xAxisFormat = xAxisFormat
     this.interval = interval
     this.xVarFormatterPosition = xVarFormatterPosition
+
+    d3.select("#debug").text(layers)
+
   } // end render
 
 
    animateDiscrete = (note, key, i, len) => {
   
-          const self = this
-          let filterData = self.sonicData.slice(0,i+1)
-            let bars = self.features.selectAll(".bar").data(filterData)
-            bars.exit().remove()
-            bars.enter().append("rect")
-                .attr("class", "bar")
-                .attr("x", function (d) {
-                return self.x(d[self.xVar])
-                })
-                .style("fill", function () {
-                return self.colors.get(self.spareKeys[0])
-                })
-                .attr("y", function (d) {
-                    return self.y(Math.max(d[self.spareKeys[0]], 0))
-                // return y(d[keys[0]])
-                })
-                .attr("width", self.x.bandwidth())
-                .attr("height", function (d) {
-                return Math.abs(self.y(d[self.spareKeys[0]]) - self.y(0))
-        
-                })
+      const self = this
+      let keyIndex = self.spareKeys.indexOf(key)
+      // let includeKeys = self.spareKeys.slice(0,self.spareKeys.indexOf(key)) 
 
-            d3.select("#features")
-            .append("circle")
-            .attr("cy", self.y(self.data[i][self.spareKeys[0]]))
-            .attr("fill", self.colors.get(self.spareKeys[0]))
-            .attr("cx", self.x(self.data[i][self.xVar]) + self.x.bandwidth()/2)
-            .attr("r", 0)
-            .style("opacity", 1)
-            .transition()
-            .duration(300)
-            .attr("r",40)
-            .style("opacity",0)
-            .remove()   
+      let filterData = self.layers.slice(0,keyIndex+1)
+      // console.log(self.layers[keyIndex].key)
+      // filterData[keyIndex].key = self.layers[keyIndex].key
+  
+      filterData[keyIndex] = filterData[keyIndex].slice(0,i+1)
+      filterData[keyIndex].key = self.layers[keyIndex].key
+      filterData[keyIndex].index = self.layers[keyIndex].index
+
+
+      const layer = self.features
+    .selectAll(".layer")
+    .data(filterData, (d) => d.key);
+
+// Remove exiting layers
+layer.exit().remove();
+
+// Merge enter and update selections
+const layerEnter = layer
+    .enter()
+    .append("g")
+    .attr("class", (d) => "layer " + d.key)
+    .style("fill", (d, i) => self.colors.get(d.key))
+    .merge(layer);
+
+// Bind data to rects within layers
+const bars = layerEnter
+    .selectAll("rect")
+    .data((d) => d); // Ensure proper data structure
+
+// Remove old bars
+bars.exit().remove();
+
+// Enter new bars
+bars
+    .enter()
+    .append("rect")
+    .attr("class", "bar")
+    .merge(bars) // Merge enter + update
+    .attr("x", (d) => self.x(d.data[self.xVar]))
+    .attr("y", (d) => self.y(d[1]))
+    .attr("height", (d) => self.y(d[0]) - self.y(d[1]))
+    .attr("width", (d) => {
+        let band = self.x.bandwidth();
+        return band < 4 ? band : band - 2;
+    });
+   
+ let currentX = self.layers[keyIndex][i].data[self.xVar]
+ let currentY = self.layers[keyIndex][i][1]
+//  console.log(self.layers[keyIndex][i])
+      d3.select("#features")
+      .append("circle")
+      .attr("cy", self.y(currentY))
+      .attr("fill", self.colors.get(key))
+      .attr("cx", self.x(currentX) + self.x.bandwidth()/2)
+      .attr("r", 0)
+      .style("opacity", 1)
+      .transition()
+      .duration(300)
+      .attr("r",40)
+      .style("opacity",0)
+      .remove()   
   
   }
 

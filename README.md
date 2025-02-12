@@ -1,4 +1,4 @@
-# Noisycharts Composer
+# Noisycharts Composer v0.2
 
 This is the next iteration of our experiments with audiocharts. It is an app for creating, editing and recording charts with the data represented sonically as well as graphically. You can see a live work-in-progress version [here](https://nickjevershed.github.io/noisycharts/)
 
