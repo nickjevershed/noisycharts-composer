@@ -10,7 +10,7 @@ const config = {
       		assets: 'build'
 		}),
 		paths: {
-			base: process.argv.includes('dev') ? '' : 'noisycharts-composer/'
+			base: process.argv.includes('dev') ? '' : '/noisycharts-composer'
 		}
 	}
 	
